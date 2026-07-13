@@ -1,0 +1,2396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Tate's Expedition - Summer 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root {
+  --gold: #d4a017;
+  --gold-light: #f0c040;
+  --gold-dim: #8b6914;
+  --obsidian: #1a1a1a;
+  --obsidian-light: #2a2a2a;
+  --teal: #1a6b5c;
+  --teal-light: #2d9b84;
+  --terracotta: #c44e2c;
+  --terracotta-light: #e06840;
+  --stone: #4a4a4a;
+  --stone-light: #6a6a6a;
+  --cream: #f5e6c8;
+  --text: #e8e0d0;
+  --text-dim: #9a9080;
+  --bg: #0d0d0d;
+  --card-bg: #1e1e1e;
+  --card-border: #3a3020;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding-bottom: 80px;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, .aztec-font {
+  font-family: 'Cinzel Decorative', cursive;
+}
+
+/* Aztec Border Pattern */
+.aztec-border {
+  height: 12px;
+  background: repeating-linear-gradient(90deg,
+    var(--gold) 0px, var(--gold) 8px,
+    transparent 8px, transparent 12px,
+    var(--terracotta) 12px, var(--terracotta) 20px,
+    transparent 20px, transparent 24px,
+    var(--teal) 24px, var(--teal) 32px,
+    transparent 32px, transparent 36px
+  );
+  position: relative;
+}
+
+.aztec-border::after {
+  content: '';
+  position: absolute;
+  bottom: -6px; left: 0; right: 0;
+  height: 6px;
+  background: repeating-linear-gradient(90deg,
+    var(--gold-dim) 0px, var(--gold-dim) 4px,
+    transparent 4px, transparent 8px
+  );
+}
+
+/* Header */
+.app-header {
+  background: linear-gradient(180deg, #1a1208 0%, #0d0d0d 100%);
+  padding: 24px 20px 16px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.app-header::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(212,160,23,0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 50%, rgba(26,107,92,0.08) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.app-header h1 {
+  color: var(--gold-light);
+  font-size: 1.5rem;
+  text-shadow: 0 0 20px rgba(240,192,64,0.4);
+  position: relative;
+  letter-spacing: 2px;
+}
+
+.app-header .subtitle {
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  margin-top: 6px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+/* Navigation */
+.tab-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: linear-gradient(180deg, #1a1208, #0d0a05);
+  border-top: 2px solid var(--gold-dim);
+  display: flex;
+  justify-content: space-around;
+  padding: 6px 2px;
+  z-index: 1000;
+  padding-bottom: env(safe-area-inset-bottom, 6px);
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 0.6rem;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 6px;
+  border-radius: 8px;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.tab-btn .tab-icon { font-size: 1.2rem; }
+.tab-btn.active { color: var(--gold-light); background: rgba(212,160,23,0.15); }
+.tab-btn:hover { color: var(--gold); }
+
+/* Tab Content */
+.tab-content { display: none; padding: 20px 16px; animation: fadeIn 0.3s; }
+.tab-content.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Cards */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--teal), var(--terracotta));
+}
+
+.section-title {
+  color: var(--gold-light);
+  font-size: 1.3rem;
+  text-align: center;
+  margin-bottom: 20px;
+  text-shadow: 0 0 10px rgba(240,192,64,0.3);
+}
+
+/* Countdown */
+.countdown-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.countdown-unit {
+  background: linear-gradient(135deg, #1a1208, #2a2010);
+  border: 1px solid var(--gold-dim);
+  border-radius: 10px;
+  padding: 14px 8px;
+  text-align: center;
+}
+
+.countdown-unit .number {
+  font-family: 'Cinzel Decorative', cursive;
+  font-size: 1.8rem;
+  color: var(--gold-light);
+  text-shadow: 0 0 10px rgba(240,192,64,0.5);
+}
+
+.countdown-unit .label {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 4px;
+}
+
+.trip-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.stat-item {
+  background: rgba(26,107,92,0.1);
+  border: 1px solid rgba(26,107,92,0.3);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+}
+
+.stat-item .stat-val {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--teal-light);
+}
+
+.stat-item .stat-label {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+/* Journey */
+.day-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.day-card-header {
+  background: linear-gradient(135deg, rgba(212,160,23,0.15), rgba(26,107,92,0.1));
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--card-border);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.day-card-header h3 {
+  color: var(--gold-light);
+  font-family: 'Cinzel Decorative', cursive;
+  font-size: 0.9rem;
+}
+
+.day-card-header .day-date {
+  color: var(--text-dim);
+  font-size: 0.75rem;
+}
+
+.day-card-body {
+  padding: 16px;
+  display: none;
+}
+
+.day-card-body.open { display: block; }
+
+.day-route {
+  color: var(--teal-light);
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin-bottom: 10px;
+}
+
+.day-activities {
+  list-style: none;
+  padding: 0;
+}
+
+.day-activities li {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 0.85rem;
+  padding-left: 20px;
+  position: relative;
+}
+
+.day-activities li::before {
+  content: '>';
+  position: absolute;
+  left: 0;
+  color: var(--gold);
+  font-weight: 800;
+}
+
+/* Map */
+#map {
+  height: 400px;
+  border-radius: 12px;
+  border: 2px solid var(--gold-dim);
+  filter: sepia(0.3) hue-rotate(-10deg) saturate(1.2) brightness(0.9);
+}
+
+/* Games */
+.game-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.game-tab-btn {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  color: var(--text-dim);
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.game-tab-btn.active {
+  background: rgba(212,160,23,0.2);
+  border-color: var(--gold);
+  color: var(--gold-light);
+}
+
+.game-panel { display: none; }
+.game-panel.active { display: block; }
+
+/* Trivia */
+.trivia-category-select {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+}
+
+.trivia-question {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+
+.trivia-options { display: flex; flex-direction: column; gap: 10px; }
+
+.trivia-opt {
+  background: var(--obsidian-light);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-align: left;
+}
+
+.trivia-opt:hover { border-color: var(--gold); }
+.trivia-opt.correct { background: rgba(26,107,92,0.4); border-color: var(--teal-light); }
+.trivia-opt.wrong { background: rgba(196,78,44,0.4); border-color: var(--terracotta); }
+
+.trivia-score {
+  text-align: center;
+  margin-top: 16px;
+  color: var(--gold-light);
+  font-weight: 700;
+}
+
+.trivia-next {
+  display: block;
+  margin: 16px auto 0;
+  background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+  color: #000;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* Would You Rather */
+.wyr-card {
+  text-align: center;
+  padding: 20px;
+}
+
+.wyr-question {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+
+.wyr-btn {
+  display: block;
+  width: 100%;
+  background: var(--obsidian-light);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 16px;
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-bottom: 10px;
+}
+
+.wyr-btn:first-of-type:hover { border-color: var(--teal-light); background: rgba(26,107,92,0.2); }
+.wyr-btn:last-of-type:hover { border-color: var(--terracotta); background: rgba(196,78,44,0.2); }
+
+/* License Plate */
+.plate-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.plate-item {
+  background: var(--obsidian-light);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 10px 6px;
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.plate-item.found {
+  background: rgba(26,107,92,0.3);
+  border-color: var(--teal-light);
+  color: var(--teal-light);
+}
+
+.plate-count {
+  text-align: center;
+  margin-bottom: 12px;
+  color: var(--gold-light);
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+/* Music Section */
+.chord-bank {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.chord-btn {
+  background: var(--obsidian-light);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 10px 4px;
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.chord-btn:active, .chord-btn.playing {
+  background: rgba(212,160,23,0.3);
+  border-color: var(--gold);
+  transform: scale(0.95);
+}
+
+.progression-area {
+  background: var(--obsidian-light);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 12px;
+  min-height: 50px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.prog-chord {
+  background: rgba(26,107,92,0.2);
+  border: 1px solid var(--teal);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--teal-light);
+  cursor: pointer;
+}
+
+.prog-chord.highlight {
+  background: rgba(212,160,23,0.3);
+  border-color: var(--gold);
+  color: var(--gold-light);
+}
+
+.music-controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.music-btn {
+  background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+  color: #000;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.music-btn.secondary {
+  background: var(--obsidian-light);
+  border: 1px solid var(--card-border);
+  color: var(--text);
+}
+
+/* Metronome */
+.metronome-section {
+  background: var(--obsidian-light);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+}
+
+.bpm-display {
+  font-family: 'Cinzel Decorative', cursive;
+  font-size: 2.5rem;
+  color: var(--gold-light);
+  margin: 10px 0;
+}
+
+.bpm-slider {
+  width: 100%;
+  margin: 10px 0;
+  accent-color: var(--gold);
+}
+
+.beat-dots {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.beat-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--stone);
+  border: 2px solid var(--stone-light);
+  transition: all 0.1s;
+}
+
+.beat-dot.active {
+  background: var(--gold-light);
+  border-color: var(--gold);
+  box-shadow: 0 0 12px rgba(240,192,64,0.6);
+}
+
+.beat-dot.accent {
+  background: var(--terracotta-light);
+  border-color: var(--terracotta);
+  box-shadow: 0 0 12px rgba(224,104,64,0.6);
+}
+
+.time-sig-btns {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.time-sig-btn {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  color: var(--text-dim);
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.time-sig-btn.active {
+  border-color: var(--gold);
+  color: var(--gold-light);
+  background: rgba(212,160,23,0.15);
+}
+
+/* Preset select */
+.preset-select {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.85rem;
+  margin-bottom: 12px;
+}
+
+/* Drum Kit */
+.drum-kit {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.drum-pad {
+  padding: 18px 8px;
+  border-radius: 10px;
+  border: 2px solid var(--card-border);
+  background: var(--obsidian-light);
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.08s;
+  text-align: center;
+}
+
+.drum-pad:active {
+  transform: scale(0.92);
+}
+
+.drum-pad.kick { border-color: var(--terracotta); color: var(--terracotta-light); }
+.drum-pad.kick:active { background: rgba(196,78,44,0.3); }
+.drum-pad.snare { border-color: var(--gold-dim); color: var(--gold-light); }
+.drum-pad.snare:active { background: rgba(212,160,23,0.3); }
+.drum-pad.hihat { border-color: var(--teal); color: var(--teal-light); }
+.drum-pad.hihat:active { background: rgba(26,107,92,0.3); }
+.drum-pad.tom1 { border-color: #7c5cb5; color: #a78bda; }
+.drum-pad.tom1:active { background: rgba(124,92,181,0.3); }
+.drum-pad.tom2 { border-color: #5c8cb5; color: #8bb5da; }
+.drum-pad.tom2:active { background: rgba(92,140,181,0.3); }
+.drum-pad.crash { border-color: var(--gold); color: var(--gold-light); }
+.drum-pad.crash:active { background: rgba(240,192,64,0.3); }
+.drum-pad.ride { border-color: var(--stone-light); color: var(--text); }
+.drum-pad.ride:active { background: rgba(106,106,106,0.3); }
+.drum-pad.clap { border-color: var(--terracotta-light); color: var(--cream); }
+.drum-pad.clap:active { background: rgba(224,104,64,0.3); }
+
+.drum-presets {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* Lyrics */
+.lyrics-textarea {
+  width: 100%;
+  min-height: 160px;
+  padding: 14px;
+  background: var(--obsidian-light);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--text);
+  resize: vertical;
+  outline: none;
+}
+
+.lyrics-textarea:focus {
+  border-color: var(--gold-dim);
+}
+
+.lyrics-textarea::placeholder {
+  color: var(--text-dim);
+}
+
+.saved-song-item {
+  background: var(--obsidian-light);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.saved-song-item:hover {
+  border-color: var(--gold-dim);
+}
+
+.saved-song-item .song-name {
+  font-weight: 700;
+  color: var(--gold-light);
+  font-size: 0.9rem;
+}
+
+.saved-song-item .song-detail {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+.saved-song-item .song-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.saved-song-item .song-actions button {
+  font-size: 0.7rem;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  color: var(--text-dim);
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+}
+
+.saved-song-item .song-actions button:hover {
+  border-color: var(--gold-dim);
+  color: var(--text);
+}
+
+/* Build Challenges */
+.build-challenge {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.build-challenge.completed {
+  border-color: var(--teal);
+  background: rgba(26,107,92,0.1);
+}
+
+.build-check {
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--stone-light);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1rem;
+  transition: all 0.3s;
+}
+
+.build-challenge.completed .build-check {
+  background: var(--teal);
+  border-color: var(--teal-light);
+}
+
+.build-info h4 {
+  color: var(--gold-light);
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.build-info p {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+/* Aztec Section */
+.aztec-fact {
+  background: linear-gradient(135deg, rgba(212,160,23,0.08), rgba(196,78,44,0.05));
+  border: 1px solid var(--card-border);
+  border-left: 4px solid var(--gold);
+  border-radius: 0 10px 10px 0;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.aztec-fact h4 {
+  color: var(--gold-light);
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+}
+
+.aztec-fact p {
+  color: var(--text);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.nahuatl-word {
+  background: linear-gradient(135deg, rgba(26,107,92,0.15), rgba(212,160,23,0.1));
+  border: 1px solid var(--teal);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.nahuatl-word .word {
+  font-family: 'Cinzel Decorative', cursive;
+  font-size: 1.8rem;
+  color: var(--gold-light);
+  margin-bottom: 6px;
+}
+
+.nahuatl-word .pronunciation {
+  color: var(--teal-light);
+  font-style: italic;
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+}
+
+.nahuatl-word .meaning {
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* Soccer Tracker */
+.juggle-counter {
+  text-align: center;
+  padding: 20px;
+}
+
+.juggle-count {
+  font-family: 'Cinzel Decorative', cursive;
+  font-size: 4rem;
+  color: var(--gold-light);
+  text-shadow: 0 0 20px rgba(240,192,64,0.5);
+  margin: 20px 0;
+}
+
+.juggle-high {
+  color: var(--teal-light);
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.juggle-btn {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--teal), var(--teal-light));
+  border: 3px solid var(--teal-light);
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 800;
+  font-family: 'Nunito', sans-serif;
+  cursor: pointer;
+  transition: all 0.1s;
+  box-shadow: 0 4px 20px rgba(45,155,132,0.4);
+}
+
+.juggle-btn:active { transform: scale(0.92); }
+
+.juggle-reset {
+  background: var(--obsidian-light);
+  border: 1px solid var(--card-border);
+  color: var(--text-dim);
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 16px;
+}
+
+/* Responsive */
+@media (min-width: 768px) {
+  .tab-content { max-width: 700px; margin: 0 auto; }
+  .countdown-grid { gap: 16px; }
+  .plate-grid { grid-template-columns: repeat(5, 1fr); }
+  .chord-bank { grid-template-columns: repeat(6, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <h1>TATE'S EXPEDITION</h1>
+  <div class="subtitle">Summer 2026 - The Great Northwest Quest</div>
+</header>
+<div class="aztec-border"></div>
+
+<!-- COUNTDOWN TAB -->
+<div id="tab-countdown" class="tab-content active">
+  <h2 class="section-title">The Quest Begins</h2>
+  <div class="card">
+    <div class="countdown-grid" id="countdown-grid">
+      <div class="countdown-unit"><div class="number" id="cd-days">--</div><div class="label">Days</div></div>
+      <div class="countdown-unit"><div class="number" id="cd-hours">--</div><div class="label">Hours</div></div>
+      <div class="countdown-unit"><div class="number" id="cd-mins">--</div><div class="label">Mins</div></div>
+      <div class="countdown-unit"><div class="number" id="cd-secs">--</div><div class="label">Secs</div></div>
+    </div>
+    <div class="trip-stats">
+      <div class="stat-item"><div class="stat-val">11</div><div class="stat-label">Days</div></div>
+      <div class="stat-item"><div class="stat-val">~2,800</div><div class="stat-label">Miles</div></div>
+      <div class="stat-item"><div class="stat-val">7</div><div class="stat-label">States/Provinces</div></div>
+      <div class="stat-item"><div class="stat-val">2</div><div class="stat-label">Countries</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3 style="color:var(--gold-light);font-size:0.9rem;margin-bottom:12px;">Mission Highlights</h3>
+    <div class="day-activities">
+      <li>Cousin Trevor's wedding in Lynden, WA</li>
+      <li>Baseball: Spokane Indians vs Vancouver Canadians</li>
+      <li>Cross into Canada - explore Vancouver, BC</li>
+      <li>Radium Hot Springs soak</li>
+      <li>Deception Falls hike</li>
+      <li>Blueberry picking at Barbie's Berries</li>
+      <li>Poutine Queen restaurant in Radium</li>
+    </div>
+  </div>
+  <!-- Soccer Tracker -->
+  <div class="card">
+    <h3 style="color:var(--gold-light);font-size:0.9rem;margin-bottom:12px;">Juggle Counter</h3>
+    <div class="juggle-counter">
+      <div class="juggle-count" id="juggle-count">0</div>
+      <div class="juggle-high" id="juggle-high">High Score: 0</div>
+      <button class="juggle-btn" id="juggle-btn" onclick="addJuggle()">TAP</button>
+      <br>
+      <button class="juggle-reset" onclick="resetJuggle()">Reset</button>
+    </div>
+  </div>
+</div>
+
+<!-- JOURNEY TAB -->
+<div id="tab-journey" class="tab-content">
+  <h2 class="section-title">Expedition Log</h2>
+  
+  <div class="day-card">
+    <div class="day-card-header" onclick="toggleDay(this)">
+      <h3>Day 1 - The Launch</h3>
+      <span class="day-date">Jul 29</span>
+    </div>
+    <div class="day-card-body">
+      <div class="day-route">Commerce City, CO to Burley, ID (~8 hrs)</div>
+      <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:10px;">Holiday Inn Express. Early morning departure through Wyoming and into Idaho.</p>
+      <ul class="day-activities">
+        <li>Car games: License plate bingo through WY and ID</li>
+        <li>Look for the Continental Divide signs</li>
+        <li>Download offline Minecraft maps for the drive</li>
+        <li>Find a soccer field at a rest stop for quick juggling</li>
+        <li>Spot the Snake River crossing near Burley</li>
+        <li>Build challenge: Card house in the hotel room</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="day-card">
+    <div class="day-card-header" onclick="toggleDay(this)">
+      <h3>Day 2 - Northwest Bound</h3>
+      <span class="day-date">Jul 30</span>
+    </div>
+    <div class="day-card-body">
+      <div class="day-route">Burley, ID to Ellensburg, WA (~6.5 hrs)</div>
+      <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:10px;">Holiday Inn Express. Crossing through Oregon into Washington state.</p>
+      <ul class="day-activities">
+        <li>Watch for Boise skyline from the highway</li>
+        <li>Cross the Columbia River - one of the biggest in the West</li>
+        <li>Guitar practice in the car (chord shapes, strumming)</li>
+        <li>Ellensburg has a cool downtown to walk around</li>
+        <li>Look for wild horses in the eastern WA desert</li>
+        <li>Build challenge: Rubber band ball from gas station supplies</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="day-card">
+    <div class="day-card-header" onclick="toggleDay(this)">
+      <h3>Day 3 - Into the Forest</h3>
+      <span class="day-date">Jul 31</span>
+    </div>
+    <div class="day-card-body">
+      <div class="day-route">Ellensburg, WA to Lynden, WA (stop at Deception Falls)</div>
+      <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:10px;">AirBnb. Stop at Deception Falls. Rehearsal dinner for Trevor's wedding at 5:50 PM.</p>
+      <ul class="day-activities">
+        <li>Hike at Deception Falls - short trail, epic waterfall</li>
+        <li>Cross the Cascade Mountain range</li>
+        <li>Lynden is a Dutch-style town - look for windmills</li>
+        <li>Rehearsal dinner at 5:50 PM - suit up!</li>
+        <li>Build challenge: Mini dam at Deception Falls creek</li>
+        <li>Find cool rocks at the falls for your collection</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="day-card">
+    <div class="day-card-header" onclick="toggleDay(this)">
+      <h3>Day 4 - Wedding Day</h3>
+      <span class="day-date">Aug 1</span>
+    </div>
+    <div class="day-card-body">
+      <div class="day-route">Lynden, WA (all day)</div>
+      <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:10px;">Pick blueberries in the morning, Trevor's wedding in Ferndale later.</p>
+      <ul class="day-activities">
+        <li>Morning: Pick blueberries at Barbie's Berries</li>
+        <li>Eat as many blueberries as you pick (probably)</li>
+        <li>Trevor's wedding in Ferndale - celebrate!</li>
+        <li>Dance floor moves - show off your skills</li>
+        <li>Build challenge: Aztec pyramid from sugar cubes or crackers</li>
+        <li>See if there is a soccer field nearby for morning warmup</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="day-card">
+    <div class="day-card-header" onclick="toggleDay(this)">
+      <h3>Day 5 - Cross the Border</h3>
+      <span class="day-date">Aug 2</span>
+    </div>
+    <div class="day-card-body">
+      <div class="day-route">Lynden, WA to Vancouver, BC</div>
+      <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:10px;">AirBnb. Cross into Canada! Baseball game tonight.</p>
+      <ul class="day-activities">
+        <li>Cross the US/Canada border - have your passport ready</li>
+        <li>Baseball: Spokane Indians vs Vancouver Canadians</li>
+        <li>Nat Bailey Stadium is one of the coolest minor league parks</li>
+        <li>Try Canadian snacks (ketchup chips, Coffee Crisp)</li>
+        <li>Build challenge: Juggle a soccer ball - count your record</li>
+        <li>Spot differences between Canadian and American cities</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="day-card">
+    <div class="day-card-header" onclick="toggleDay(this)">
+      <h3>Days 6-7 - Vancouver Explorer</h3>
+      <span class="day-date">Aug 3-4</span>
+    </div>
+    <div class="day-card-body">
+      <div class="day-route">Vancouver, BC (Free Days)</div>
+      <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:10px;">Two free days to explore one of the coolest cities in North America.</p>
+      <ul class="day-activities">
+        <li>Stanley Park seawall walk/bike - 10km loop along the ocean</li>
+        <li>Granville Island - street performers, food market, cool shops</li>
+        <li>Science World - hands-on exhibits (building/tinkering heaven)</li>
+        <li>Gastown - steam clock, cobblestone streets, oldest part of city</li>
+        <li>Find a pickup soccer game at a beach park</li>
+        <li>Try poutine (fries, cheese curds, gravy) - a Canadian must</li>
+        <li>Capilano Suspension Bridge or Lynn Canyon (free option)</li>
+        <li>Build challenges: Tower from hotel items + paper airplanes</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="day-card">
+    <div class="day-card-header" onclick="toggleDay(this)">
+      <h3>Day 8 - Mountain Crossing</h3>
+      <span class="day-date">Aug 5</span>
+    </div>
+    <div class="day-card-body">
+      <div class="day-route">Vancouver, BC to Radium Hot Springs, BC (~8 hrs)</div>
+      <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:10px;">Epic drive through the Canadian Rockies. Stay 2 nights.</p>
+      <ul class="day-activities">
+        <li>Drive through the Fraser Canyon - dramatic mountain highway</li>
+        <li>Cross Rogers Pass in Glacier National Park (Canada)</li>
+        <li>Watch for mountain goats, bears, and eagles</li>
+        <li>Spot glaciers from the highway</li>
+        <li>Arrive at Radium Hot Springs - soak those legs!</li>
+        <li>Build challenge: Skip rocks at the lake - count your best</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="day-card">
+    <div class="day-card-header" onclick="toggleDay(this)">
+      <h3>Day 9 - Rest Day</h3>
+      <span class="day-date">Aug 6</span>
+    </div>
+    <div class="day-card-body">
+      <div class="day-route">Radium Hot Springs, BC (rest day)</div>
+      <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:10px;">Chill day. Hot springs, exploring, good food.</p>
+      <ul class="day-activities">
+        <li>Soak in the hot springs (mineral pools at 40C/104F)</li>
+        <li>Eat at Poutine Queen - loaded poutine!</li>
+        <li>Hike the Juniper Trail (easy, great views)</li>
+        <li>Watch for bighorn sheep in town (they walk the streets!)</li>
+        <li>Guitar practice by the pool</li>
+        <li>Build challenge: Mini catapult from popsicle sticks</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="day-card">
+    <div class="day-card-header" onclick="toggleDay(this)">
+      <h3>Day 10 - Montana Bound</h3>
+      <span class="day-date">Aug 7</span>
+    </div>
+    <div class="day-card-body">
+      <div class="day-route">Radium Hot Springs, BC to Billings, MT (~7 hrs)</div>
+      <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:10px;">Holiday Inn Express East. Back into the USA, crossing Montana.</p>
+      <ul class="day-activities">
+        <li>Cross back into the USA at the Montana border</li>
+        <li>Drive through Flathead Lake area (biggest lake in the West)</li>
+        <li>Montana is BIG - wide open spaces</li>
+        <li>Billings has a cool rimrock area (cliffs above town)</li>
+        <li>Build challenge: Balance challenge - stack weird things</li>
+        <li>Last night in a hotel - make it count!</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="day-card">
+    <div class="day-card-header" onclick="toggleDay(this)">
+      <h3>Day 11 - Homeward Bound</h3>
+      <span class="day-date">Aug 8</span>
+    </div>
+    <div class="day-card-body">
+      <div class="day-route">Billings, MT to Commerce City, CO (~9 hrs)</div>
+      <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:10px;">The final leg. Through Wyoming and home to Colorado!</p>
+      <ul class="day-activities">
+        <li>Last big driving day - you got this</li>
+        <li>Cross through Sheridan, WY and down I-25</li>
+        <li>Watch for pronghorn antelope in Wyoming</li>
+        <li>Colorado border - almost home!</li>
+        <li>Build challenge: Time capsule - write a letter to 13-year-old Tate</li>
+        <li>Reflect on the adventure - what was the best part?</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- MAP TAB -->
+<div id="tab-map" class="tab-content">
+  <h2 class="section-title">Expedition Map</h2>
+  <div class="card">
+    <div id="map"></div>
+  </div>
+</div>
+
+<!-- GAMES TAB -->
+<div id="tab-games" class="tab-content">
+  <h2 class="section-title">Games</h2>
+  <div class="game-tabs">
+    <button class="game-tab-btn active" onclick="switchGame('trivia')">Trivia</button>
+    <button class="game-tab-btn" onclick="switchGame('wyr')">Would You Rather</button>
+    <button class="game-tab-btn" onclick="switchGame('plates')">License Plates</button>
+  </div>
+
+  <!-- Trivia Panel -->
+  <div id="game-trivia" class="game-panel active">
+    <div class="card">
+      <select class="trivia-category-select" id="trivia-cat" onchange="loadTrivia()">
+        <option value="all">All Categories</option>
+        <option value="soccer">Soccer</option>
+        <option value="minecraft">Minecraft</option>
+        <option value="zelda">Zelda</option>
+        <option value="aztec">Aztec Empire</option>
+        <option value="geography">Geography</option>
+        <option value="science">Science</option>
+        <option value="space">Space</option>
+        <option value="animals">Animals</option>
+        <option value="general">General Knowledge</option>
+      </select>
+      <div id="trivia-area">
+        <div class="trivia-question" id="trivia-q"></div>
+        <div class="trivia-options" id="trivia-opts"></div>
+        <div class="trivia-score" id="trivia-score"></div>
+        <button class="trivia-next" id="trivia-next" onclick="nextTrivia()" style="display:none;">Next Question</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Would You Rather Panel -->
+  <div id="game-wyr" class="game-panel">
+    <div class="card wyr-card">
+      <div class="wyr-question" id="wyr-question"></div>
+      <button class="wyr-btn" id="wyr-a" onclick="nextWYR()"></button>
+      <button class="wyr-btn" id="wyr-b" onclick="nextWYR()"></button>
+      <div style="margin-top:16px;color:var(--text-dim);font-size:0.8rem;" id="wyr-count"></div>
+    </div>
+  </div>
+
+  <!-- License Plate Panel -->
+  <div id="game-plates" class="game-panel">
+    <div class="card">
+      <div class="plate-count" id="plate-count">0 / 63 Found</div>
+      <div class="plate-grid" id="plate-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MUSIC TAB -->
+<div id="tab-music" class="tab-content">
+  <h2 class="section-title">Guitar Lab</h2>
+  
+  <div class="card">
+    <h3 style="color:var(--gold-light);font-size:0.9rem;margin-bottom:12px;">Chord Bank (tap to play)</h3>
+    <div class="chord-bank" id="chord-bank"></div>
+  </div>
+
+  <div class="card">
+    <h3 style="color:var(--gold-light);font-size:0.9rem;margin-bottom:12px;">Progression Builder</h3>
+    <select class="preset-select" id="preset-select" onchange="loadPreset()">
+      <option value="">-- Load a Preset --</option>
+      <option value="edgehill1">Edgehill - Typical Progression (G-D-Em-C)</option>
+      <option value="edgehill2">Edgehill - Verse Pattern (Am-F-C-G)</option>
+      <option value="benrector1">Ben Rector - Brand New (C-G-Am-F)</option>
+      <option value="benrector2">Ben Rector - Love Like This (G-Em-C-D)</option>
+      <option value="campfire">Campfire Classic (G-C-D-C)</option>
+      <option value="rock">Rock Anthem (E-A-B-A)</option>
+      <option value="sad">Sad Song (Am-Dm-G-C)</option>
+      <option value="pop">Pop Hit (C-G-Am-F)</option>
+    </select>
+    <div class="progression-area" id="progression-area">
+      <span style="color:var(--text-dim);font-size:0.8rem;">Tap chords above to build, or load a preset</span>
+    </div>
+    <div class="music-controls">
+      <button class="music-btn" onclick="playProgression()">Play Progression</button>
+      <button class="music-btn secondary" onclick="clearProgression()">Clear</button>
+    </div>
+  </div>
+
+  <div class="card metronome-section">
+    <h3 style="color:var(--gold-light);font-size:0.9rem;margin-bottom:12px;">Metronome</h3>
+    <div class="time-sig-btns">
+      <button class="time-sig-btn" onclick="setTimeSig(3, this)">3/4</button>
+      <button class="time-sig-btn active" onclick="setTimeSig(4, this)">4/4</button>
+      <button class="time-sig-btn" onclick="setTimeSig(6, this)">6/8</button>
+    </div>
+    <div class="bpm-display" id="bpm-display">120</div>
+    <input type="range" class="bpm-slider" id="bpm-slider" min="40" max="220" value="120" oninput="updateBPM(this.value)">
+    <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:var(--text-dim);"><span>40</span><span>220</span></div>
+    <div class="beat-dots" id="beat-dots"></div>
+    <button class="music-btn" id="metro-btn" onclick="toggleMetronome()">Start Metronome</button>
+  </div>
+
+  <!-- Drum Kit -->
+  <div class="card">
+    <h3 style="color:var(--gold-light);font-size:0.9rem;margin-bottom:12px;">Drum Kit (tap the pads)</h3>
+    <div class="drum-kit" id="drum-kit">
+      <button class="drum-pad kick" onclick="playDrum('kick')">KICK</button>
+      <button class="drum-pad snare" onclick="playDrum('snare')">SNARE</button>
+      <button class="drum-pad hihat" onclick="playDrum('hihat')">HI-HAT</button>
+      <button class="drum-pad tom1" onclick="playDrum('tom1')">TOM 1</button>
+      <button class="drum-pad tom2" onclick="playDrum('tom2')">TOM 2</button>
+      <button class="drum-pad crash" onclick="playDrum('crash')">CRASH</button>
+      <button class="drum-pad ride" onclick="playDrum('ride')">RIDE</button>
+      <button class="drum-pad clap" onclick="playDrum('clap')">CLAP</button>
+    </div>
+    <div style="margin-top: 12px;">
+      <p style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 8px;">Beat Presets (tap to loop):</p>
+      <div class="drum-presets">
+        <button class="music-btn secondary" onclick="toggleDrumLoop('rock')">Rock</button>
+        <button class="music-btn secondary" onclick="toggleDrumLoop('hiphop')">Hip Hop</button>
+        <button class="music-btn secondary" onclick="toggleDrumLoop('latin')">Latin</button>
+        <button class="music-btn secondary" onclick="stopDrumLoop()">Stop</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lyrics Pad -->
+  <div class="card">
+    <h3 style="color:var(--gold-light);font-size:0.9rem;margin-bottom:12px;">Lyrics Pad</h3>
+    <textarea id="lyrics-pad" class="lyrics-textarea" placeholder="Write your lyrics here...&#10;&#10;Tip: Use [G] [Am] [C] to mark chord changes" oninput="saveLyricsDraft()"></textarea>
+    <div class="music-controls" style="margin-top:10px;">
+      <button class="music-btn" onclick="saveSong()">Save Song</button>
+    </div>
+  </div>
+
+  <!-- Saved Songs -->
+  <div class="card">
+    <h3 style="color:var(--gold-light);font-size:0.9rem;margin-bottom:12px;">Saved Songs</h3>
+    <div id="saved-songs"></div>
+  </div>
+</div>
+
+<!-- BUILD TAB -->
+<div id="tab-build" class="tab-content">
+  <h2 class="section-title">Build Challenges</h2>
+  <p style="text-align:center;color:var(--text-dim);font-size:0.85rem;margin-bottom:20px;">One challenge per day. Tap to mark complete. Can you finish them all?</p>
+  <div id="build-list"></div>
+</div>
+
+<!-- AZTEC TAB -->
+<div id="tab-aztec" class="tab-content">
+  <h2 class="section-title">Aztec Corner</h2>
+  
+  <div class="card">
+    <h3 style="color:var(--gold-light);font-size:0.95rem;margin-bottom:8px;">Word of the Day (Nahuatl)</h3>
+    <div class="nahuatl-word" id="nahuatl-word"></div>
+    <button class="music-btn" onclick="newNahuatlWord()" style="display:block;margin:0 auto;">New Word</button>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <h3 style="color:var(--gold-light);font-size:0.95rem;margin-bottom:16px;">Mind-Blowing Aztec Facts</h3>
+    <div id="aztec-facts"></div>
+  </div>
+</div>
+
+<!-- Navigation -->
+<nav class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('countdown')"><span class="tab-icon">&#9203;</span>Home</button>
+  <button class="tab-btn" onclick="switchTab('journey')"><span class="tab-icon">&#128220;</span>Journey</button>
+  <button class="tab-btn" onclick="switchTab('map')"><span class="tab-icon">&#128506;</span>Map</button>
+  <button class="tab-btn" onclick="switchTab('games')"><span class="tab-icon">&#127918;</span>Games</button>
+  <button class="tab-btn" onclick="switchTab('music')"><span class="tab-icon">&#127925;</span>Music</button>
+  <button class="tab-btn" onclick="switchTab('build')"><span class="tab-icon">&#128296;</span>Build</button>
+  <button class="tab-btn" onclick="switchTab('aztec')"><span class="tab-icon">&#127963;</span>Aztec</button>
+</nav>
+
+<script>
+// ==================== TAB NAVIGATION ====================
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tabId).classList.add('active');
+  const tabOrder = ['countdown','journey','map','games','music','build','aztec'];
+  const idx = tabOrder.indexOf(tabId);
+  document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+  if (tabId === 'map') setTimeout(initMap, 100);
+}
+
+// ==================== COUNTDOWN ====================
+function updateCountdown() {
+  const target = new Date('2026-07-29T05:00:00-06:00');
+  const now = new Date();
+  const diff = target - now;
+  if (diff <= 0) {
+    document.getElementById('cd-days').textContent = '0';
+    document.getElementById('cd-hours').textContent = '0';
+    document.getElementById('cd-mins').textContent = '0';
+    document.getElementById('cd-secs').textContent = '0';
+    return;
+  }
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  document.getElementById('cd-days').textContent = d;
+  document.getElementById('cd-hours').textContent = h;
+  document.getElementById('cd-mins').textContent = m;
+  document.getElementById('cd-secs').textContent = s;
+}
+setInterval(updateCountdown, 1000);
+updateCountdown();
+
+// ==================== JUGGLE COUNTER ====================
+let juggleCount = 0;
+let juggleHigh = parseInt(localStorage.getItem('tate_juggle_high') || '0');
+document.getElementById('juggle-high').textContent = 'High Score: ' + juggleHigh;
+
+function addJuggle() {
+  juggleCount++;
+  document.getElementById('juggle-count').textContent = juggleCount;
+  if (juggleCount > juggleHigh) {
+    juggleHigh = juggleCount;
+    localStorage.setItem('tate_juggle_high', juggleHigh);
+    document.getElementById('juggle-high').textContent = 'High Score: ' + juggleHigh + ' (NEW!)';
+  }
+}
+
+function resetJuggle() {
+  juggleCount = 0;
+  document.getElementById('juggle-count').textContent = '0';
+  document.getElementById('juggle-high').textContent = 'High Score: ' + juggleHigh;
+}
+
+// ==================== JOURNEY ====================
+function toggleDay(header) {
+  const body = header.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+// ==================== MAP ====================
+let mapInitialized = false;
+function initMap() {
+  if (mapInitialized) return;
+  mapInitialized = true;
+  const map = L.map('map').setView([46.5, -114], 5);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; CartoDB',
+    subdomains: 'abcd',
+    maxZoom: 19
+  }).addTo(map);
+
+  const stops = [
+    { name: 'Commerce City, CO (Start/End)', lat: 39.8083, lng: -104.9344 },
+    { name: 'Burley, ID', lat: 42.5357, lng: -113.7928 },
+    { name: 'Ellensburg, WA', lat: 46.9965, lng: -120.5478 },
+    { name: 'Lynden, WA', lat: 48.9468, lng: -122.4529 },
+    { name: 'Deception Falls', lat: 47.7175, lng: -121.1933 },
+    { name: 'Vancouver, BC', lat: 49.2827, lng: -123.1207 },
+    { name: 'Radium Hot Springs, BC', lat: 50.6199, lng: -116.0734 },
+    { name: 'Billings, MT', lat: 45.7833, lng: -108.5007 }
+  ];
+
+  const goldIcon = L.divIcon({
+    html: '<div style="width:14px;height:14px;background:var(--gold-light,#f0c040);border:2px solid #000;border-radius:50%;box-shadow:0 0 8px rgba(240,192,64,0.8);"></div>',
+    iconSize: [14, 14],
+    className: ''
+  });
+
+  stops.forEach(s => {
+    L.marker([s.lat, s.lng], { icon: goldIcon })
+      .addTo(map)
+      .bindPopup('<b style="color:#d4a017;">' + s.name + '</b>');
+  });
+
+  const routeCoords = [
+    [39.8083, -104.9344], [41.14, -104.82], [42.53, -113.79],
+    [42.87, -115.79], [43.61, -116.2], [45.5, -118.5],
+    [46.99, -120.55], [47.72, -121.19], [48.35, -121.5],
+    [48.95, -122.45], [49.0, -122.76], [49.28, -123.12],
+    [49.38, -121.4], [50.62, -116.07], [49.0, -115.0],
+    [48.2, -113.0], [45.78, -108.5], [44.8, -106.9],
+    [41.14, -104.82], [39.8, -104.93]
+  ];
+
+  L.polyline(routeCoords, { color: '#d4a017', weight: 3, opacity: 0.8, dashArray: '8, 6' }).addTo(map);
+}
+
+// ==================== GAMES ====================
+function switchGame(gameId) {
+  document.querySelectorAll('.game-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.game-tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('game-' + gameId).classList.add('active');
+  const order = ['trivia','wyr','plates'];
+  document.querySelectorAll('.game-tab-btn')[order.indexOf(gameId)].classList.add('active');
+  if (gameId === 'plates') renderPlates();
+  if (gameId === 'wyr') showWYR();
+}
+
+// ==================== TRIVIA ====================
+const triviaDB = {
+soccer: [
+  {q:"Which country has won the most FIFA World Cups?",o:["Germany","Argentina","Brazil","Italy"],a:2},
+  {q:"How many players are on a soccer field per team (including goalie)?",o:["10","11","12","9"],a:1},
+  {q:"What is the term for three goals scored by one player in a game?",o:["Triple","Trifecta","Hat trick","Three-peat"],a:2},
+  {q:"Which country hosted the 2022 FIFA World Cup?",o:["Russia","USA","Qatar","Japan"],a:2},
+  {q:"What does a yellow card mean in soccer?",o:["Goal scored","Warning/caution","Substitution","Offside"],a:1},
+  {q:"Who is the all-time top scorer in men's international soccer?",o:["Messi","Ronaldo","Pele","Mbappe"],a:1},
+  {q:"What is the penalty area also called?",o:["The box","The zone","The circle","The strip"],a:0},
+  {q:"How long is a standard professional soccer match (without extra time)?",o:["80 min","90 min","100 min","120 min"],a:1},
+  {q:"What position does the sweeper play behind?",o:["Forwards","Midfielders","Defenders","Goalkeeper"],a:2},
+  {q:"Which club has won the most UEFA Champions League titles?",o:["Barcelona","Bayern Munich","Real Madrid","AC Milan"],a:2},
+  {q:"What is it called when a goalie stops the ball from entering the net?",o:["A block","A save","A catch","A deny"],a:1},
+  {q:"In what year was the first FIFA World Cup held?",o:["1920","1930","1940","1950"],a:1},
+  {q:"What country is Lionel Messi from?",o:["Brazil","Spain","Argentina","Portugal"],a:2},
+  {q:"What is the midfield line also called?",o:["Center line","Halfway line","Equator","Split line"],a:1},
+  {q:"What does 'offside' mean?",o:["Ball goes out","Player is behind last defender when ball is passed","Too many players","Foul in the box"],a:1}
+],
+minecraft: [
+  {q:"What is the strongest material in Minecraft?",o:["Diamond","Obsidian","Netherite","Bedrock"],a:3},
+  {q:"What mob explodes when it gets close to you?",o:["Skeleton","Creeper","Zombie","Spider"],a:1},
+  {q:"What do you need to make a Nether Portal?",o:["Diamond blocks","Obsidian and flint & steel","Gold blocks","Emerald blocks"],a:1},
+  {q:"How many blocks high is the build limit in modern Minecraft?",o:["256","320","128","512"],a:1},
+  {q:"What animal can you tame with bones?",o:["Cat","Horse","Wolf","Parrot"],a:2},
+  {q:"What biome do Mooshrooms spawn in?",o:["Jungle","Desert","Mushroom Island","Swamp"],a:2},
+  {q:"What do you craft with 3 iron ingots and 2 sticks?",o:["Sword","Pickaxe","Axe","Shovel"],a:1},
+  {q:"What is the Ender Dragon found in?",o:["The Nether","The End","The Overworld","The Deep Dark"],a:1},
+  {q:"Which ore is found only in the Nether?",o:["Diamond","Emerald","Ancient Debris","Lapis"],a:2},
+  {q:"What potion lets you breathe underwater?",o:["Potion of Swimming","Potion of Water Breathing","Potion of Aqua Affinity","Potion of Depth"],a:1},
+  {q:"How do you make a cake in Minecraft?",o:["3 wheat, 3 milk, 2 sugar, 1 egg","Just wheat","Milk and eggs only","You cannot craft cake"],a:0},
+  {q:"What happens when lightning strikes a pig?",o:["It dies","Becomes a Zombified Piglin","Nothing","Becomes charged"],a:1},
+  {q:"What is the rarest ore in the Overworld?",o:["Diamond","Emerald","Ancient Debris","Gold"],a:1},
+  {q:"What villager trades you enchanted books?",o:["Farmer","Librarian","Cleric","Weaponsmith"],a:1},
+  {q:"What block do you need to enchant items?",o:["Crafting table","Enchanting table","Anvil","Grindstone"],a:1}
+],
+
+zelda: [
+  {q:"In Breath of the Wild, what is the name of the old man on the Great Plateau?",o:["King Rhoam","Impa","Rauru","Kass"],a:0},
+  {q:"What is Link's main weapon throughout the Zelda series?",o:["Master Sword","Hylian Shield","Bow of Light","Biggoron Sword"],a:0},
+  {q:"In Tears of the Kingdom, what new ability lets you build vehicles?",o:["Ultrahand","Ascend","Fuse","Recall"],a:0},
+  {q:"What instrument does Link play in Ocarina of Time?",o:["Flute","Harp","Ocarina","Guitar"],a:2},
+  {q:"What is the name of Link's fairy companion in Ocarina of Time?",o:["Tatl","Navi","Fi","Midna"],a:1},
+  {q:"What race lives in Zora's Domain?",o:["Gorons","Gerudo","Zora","Rito"],a:2},
+  {q:"In BOTW, how many Divine Beasts are there?",o:["3","4","5","6"],a:1},
+  {q:"What is Ganondorf's beast form called?",o:["Ganon","Dark Beast","Calamity","Malice"],a:0},
+  {q:"What do you collect to increase your stamina in BOTW?",o:["Heart containers","Spirit orbs","Korok seeds","Rupees"],a:1},
+  {q:"What is the currency in the Zelda series?",o:["Gold","Rupees","Coins","Gems"],a:1},
+  {q:"In TOTK, what are the small forest creatures you find hiding?",o:["Minish","Koroks","Deku Scrubs","Kikwis"],a:1},
+  {q:"What is the twilight realm ruled by in Twilight Princess?",o:["Zant","Midna","Ganondorf","Vaati"],a:1},
+  {q:"How many hearts does Link typically start with?",o:["1","3","5","10"],a:1},
+  {q:"What shield can reflect Guardian lasers in BOTW?",o:["Hylian Shield","Ancient Shield","Royal Shield","Any shield with timing"],a:3}
+],
+aztec: [
+  {q:"What was the capital city of the Aztec Empire?",o:["Teotihuacan","Tenochtitlan","Tulum","Texcoco"],a:1},
+  {q:"On what lake was the Aztec capital built?",o:["Lake Chapala","Lake Patzcuaro","Lake Texcoco","Lake Xochimilco"],a:2},
+  {q:"What language did the Aztecs speak?",o:["Spanish","Mayan","Nahuatl","Quechua"],a:2},
+  {q:"What did the Aztecs use as currency?",o:["Gold coins","Cacao beans","Jade beads","Feathers"],a:1},
+  {q:"What was the Aztec ball game called?",o:["Ullamaliztli","Patolli","Tlachtli","Pok-a-tok"],a:0},
+  {q:"Who was Quetzalcoatl?",o:["A warrior king","The feathered serpent god","The sun god","An emperor"],a:1},
+  {q:"What modern country was the Aztec Empire located in?",o:["Peru","Guatemala","Mexico","Colombia"],a:2},
+  {q:"The Aztec calendar stone is also called the...",o:["Sun Stone","Moon Disk","Star Wheel","Time Circle"],a:0},
+  {q:"What Spanish conquistador defeated the Aztecs?",o:["Pizarro","Cortes","Columbus","De Soto"],a:1},
+  {q:"Approximately how many people lived in Tenochtitlan at its peak?",o:["50,000","100,000","200,000+","500,000"],a:2},
+  {q:"The Aztecs built floating gardens called...",o:["Chinampas","Milpas","Terraces","Hydros"],a:0},
+  {q:"What did the Aztecs call themselves?",o:["Aztecs","Mexica","Toltecs","Olmecs"],a:1},
+  {q:"How many days were in the Aztec ritual calendar (Tonalpohualli)?",o:["200","260","300","365"],a:1},
+  {q:"What animal was sacred to the Aztec war god?",o:["Jaguar","Eagle","Snake","Coyote"],a:1},
+  {q:"The Aztecs invented what popular food item?",o:["Pizza","Chocolate (hot chocolate)","Ice cream","Bread"],a:1}
+],
+
+geography: [
+  {q:"What US state is nicknamed 'The Gem State'?",o:["Colorado","Montana","Idaho","Wyoming"],a:2},
+  {q:"What is the capital of Washington state?",o:["Seattle","Olympia","Spokane","Tacoma"],a:1},
+  {q:"What country is directly north of Washington state?",o:["Mexico","Canada","Alaska","None"],a:1},
+  {q:"What mountain range runs through Washington?",o:["Rockies","Sierra Nevada","Cascades","Appalachians"],a:2},
+  {q:"What Canadian province is Vancouver in?",o:["Alberta","Ontario","British Columbia","Saskatchewan"],a:2},
+  {q:"What is the longest river in the Pacific Northwest?",o:["Snake River","Columbia River","Fraser River","Willamette"],a:1},
+  {q:"What state is Billings in?",o:["Idaho","Wyoming","Montana","South Dakota"],a:2},
+  {q:"The Rocky Mountains span from Canada to where?",o:["California","Texas","New Mexico","Mexico"],a:2},
+  {q:"What ocean is west of Washington and British Columbia?",o:["Atlantic","Arctic","Pacific","Indian"],a:2},
+  {q:"What is the capital of Montana?",o:["Billings","Helena","Missoula","Bozeman"],a:1},
+  {q:"The Continental Divide separates rivers flowing to which oceans?",o:["Atlantic and Pacific","Pacific and Arctic","Atlantic and Indian","Pacific and Indian"],a:0},
+  {q:"Which US state is the largest by area?",o:["Texas","Montana","Alaska","California"],a:2},
+  {q:"What is the tallest mountain in Washington state?",o:["Mt. Baker","Mt. Rainier","Mt. Adams","Mt. St. Helens"],a:1},
+  {q:"What Canadian city hosted the 2010 Winter Olympics?",o:["Toronto","Montreal","Vancouver","Calgary"],a:2}
+],
+science: [
+  {q:"What planet in our solar system has the most moons?",o:["Jupiter","Saturn","Uranus","Neptune"],a:1},
+  {q:"What is the hardest natural substance on Earth?",o:["Iron","Obsidian","Diamond","Titanium"],a:2},
+  {q:"What gas do plants absorb from the air?",o:["Oxygen","Nitrogen","Carbon dioxide","Hydrogen"],a:2},
+  {q:"What is the speed of light approximately?",o:["186,000 miles/sec","100,000 miles/sec","500,000 miles/sec","1 million miles/sec"],a:0},
+  {q:"What is the chemical symbol for gold?",o:["Go","Gd","Au","Ag"],a:2},
+  {q:"How many bones are in the adult human body?",o:["106","206","306","186"],a:1},
+  {q:"What type of rock is formed from cooled lava?",o:["Sedimentary","Metamorphic","Igneous","Mineral"],a:2},
+  {q:"What force keeps us on the ground?",o:["Magnetism","Friction","Gravity","Inertia"],a:2},
+  {q:"What is the powerhouse of the cell?",o:["Nucleus","Ribosome","Mitochondria","Chloroplast"],a:2},
+  {q:"Sound travels fastest through what medium?",o:["Air","Water","Steel","Vacuum"],a:2},
+  {q:"What element makes up most of the Sun?",o:["Helium","Oxygen","Carbon","Hydrogen"],a:3},
+  {q:"How many chambers does the human heart have?",o:["2","3","4","5"],a:2},
+  {q:"What is absolute zero in Celsius?",o:["-100C","-273C","-373C","-500C"],a:1},
+  {q:"What are the three states of matter?",o:["Hot, cold, warm","Solid, liquid, gas","Earth, water, fire","Heavy, light, medium"],a:1}
+],
+space: [
+  {q:"What is the closest star to Earth (besides the Sun)?",o:["Sirius","Alpha Centauri","Betelgeuse","Polaris"],a:1},
+  {q:"How many planets are in our solar system?",o:["7","8","9","10"],a:1},
+  {q:"What planet is known for its rings?",o:["Jupiter","Neptune","Uranus","Saturn"],a:3},
+  {q:"What is the largest planet in our solar system?",o:["Saturn","Neptune","Jupiter","Uranus"],a:2},
+  {q:"How long does light from the Sun take to reach Earth?",o:["1 minute","8 minutes","30 minutes","1 hour"],a:1},
+  {q:"What is a light year?",o:["A measure of time","A measure of distance","A measure of speed","A measure of brightness"],a:1},
+  {q:"What planet is the hottest in our solar system?",o:["Mercury","Venus","Mars","Jupiter"],a:1},
+  {q:"What is the name of the largest volcano in the solar system?",o:["Mauna Kea","Olympus Mons","Mt. Vesuvius","Krakatoa"],a:1},
+  {q:"What galaxy do we live in?",o:["Andromeda","Milky Way","Triangulum","Sombrero"],a:1},
+  {q:"Who was the first human in space?",o:["Neil Armstrong","Buzz Aldrin","Yuri Gagarin","John Glenn"],a:2},
+  {q:"What is the Great Red Spot on Jupiter?",o:["A volcano","A giant storm","A crater","An ocean"],a:1},
+  {q:"How old is the Sun approximately?",o:["1 billion years","4.6 billion years","10 billion years","100 million years"],a:1},
+  {q:"What causes a solar eclipse?",o:["Moon between Sun and Earth","Earth between Sun and Moon","Sun between Earth and Moon","Clouds blocking the Sun"],a:0},
+  {q:"What planet rotates on its side?",o:["Neptune","Saturn","Uranus","Mars"],a:2}
+],
+
+animals: [
+  {q:"What is the fastest land animal?",o:["Lion","Cheetah","Horse","Pronghorn"],a:1},
+  {q:"How many legs does an octopus have?",o:["6","8","10","12"],a:1},
+  {q:"What is the largest animal that has ever lived?",o:["African Elephant","T-Rex","Blue Whale","Megalodon"],a:2},
+  {q:"What animal can sleep standing up?",o:["Dogs","Cats","Horses","Bears"],a:2},
+  {q:"What is a group of wolves called?",o:["Herd","Pack","Flock","Pride"],a:1},
+  {q:"Which bird can fly backwards?",o:["Eagle","Hummingbird","Owl","Hawk"],a:1},
+  {q:"What is the only mammal that can truly fly?",o:["Flying squirrel","Bat","Sugar glider","Flying fox"],a:1},
+  {q:"How many hearts does an octopus have?",o:["1","2","3","4"],a:2},
+  {q:"What is the largest species of bear?",o:["Grizzly","Polar bear","Kodiak bear","Black bear"],a:1},
+  {q:"What animal has the strongest bite force?",o:["Great White Shark","Hippo","Crocodile","T-Rex (extinct)"],a:2},
+  {q:"What is the fastest bird in a dive?",o:["Eagle","Falcon (Peregrine)","Hawk","Osprey"],a:1},
+  {q:"How do snakes smell?",o:["Their nose","Their tongue","Their skin","Their eyes"],a:1},
+  {q:"What is a baby goat called?",o:["Calf","Kit","Kid","Pup"],a:2},
+  {q:"Which animal has fingerprints nearly identical to humans?",o:["Chimp","Gorilla","Koala","Orangutan"],a:2}
+],
+general: [
+  {q:"What is the tallest building in the world (2024)?",o:["Empire State","Burj Khalifa","Shanghai Tower","One World Trade"],a:1},
+  {q:"How many continents are there?",o:["5","6","7","8"],a:2},
+  {q:"What is the most spoken language in the world by native speakers?",o:["English","Hindi","Spanish","Mandarin Chinese"],a:3},
+  {q:"What year did humans first land on the Moon?",o:["1965","1967","1969","1971"],a:2},
+  {q:"How many strings does a standard guitar have?",o:["4","5","6","7"],a:2},
+  {q:"What is the smallest country in the world?",o:["Monaco","Vatican City","San Marino","Liechtenstein"],a:1},
+  {q:"What are the primary colors of light?",o:["Red, yellow, blue","Red, green, blue","Red, orange, purple","Cyan, magenta, yellow"],a:1},
+  {q:"What is the longest bone in the human body?",o:["Humerus","Tibia","Femur","Spine"],a:2},
+  {q:"Who painted the Mona Lisa?",o:["Michelangelo","Da Vinci","Raphael","Picasso"],a:1},
+  {q:"What does USB stand for?",o:["Universal Serial Bus","United System Board","Ultra Speed Bandwidth","Universal System Backup"],a:0},
+  {q:"How many time zones does the continental US have?",o:["3","4","5","6"],a:1},
+  {q:"What sport uses a shuttlecock?",o:["Tennis","Badminton","Ping Pong","Squash"],a:1},
+  {q:"What is the largest desert in the world?",o:["Sahara","Gobi","Arabian","Antarctic"],a:3},
+  {q:"What does the 'www' stand for in a website address?",o:["World Wide Web","Wireless Web Works","Western World Web","Wide Web World"],a:0}
+]
+};
+
+let triviaScore = 0;
+let triviaTotal = 0;
+let triviaPool = [];
+let triviaIdx = 0;
+let triviaAnswered = false;
+
+function loadTrivia() {
+  const cat = document.getElementById('trivia-cat').value;
+  triviaScore = 0;
+  triviaTotal = 0;
+  triviaIdx = 0;
+  if (cat === 'all') {
+    triviaPool = Object.values(triviaDB).flat();
+  } else {
+    triviaPool = [...triviaDB[cat]];
+  }
+  triviaPool.sort(() => Math.random() - 0.5);
+  showTrivia();
+}
+
+function showTrivia() {
+  if (triviaIdx >= triviaPool.length) {
+    document.getElementById('trivia-q').textContent = 'All done! You got ' + triviaScore + '/' + triviaTotal;
+    document.getElementById('trivia-opts').innerHTML = '';
+    document.getElementById('trivia-next').style.display = 'none';
+    document.getElementById('trivia-score').textContent = '';
+    return;
+  }
+  triviaAnswered = false;
+  const q = triviaPool[triviaIdx];
+  document.getElementById('trivia-q').textContent = q.q;
+  document.getElementById('trivia-next').style.display = 'none';
+  const optsDiv = document.getElementById('trivia-opts');
+  optsDiv.innerHTML = '';
+  q.o.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'trivia-opt';
+    btn.textContent = opt;
+    btn.onclick = () => answerTrivia(i, q.a, btn);
+    optsDiv.appendChild(btn);
+  });
+  document.getElementById('trivia-score').textContent = 'Score: ' + triviaScore + '/' + triviaTotal;
+}
+
+function answerTrivia(chosen, correct, btn) {
+  if (triviaAnswered) return;
+  triviaAnswered = true;
+  triviaTotal++;
+  const opts = document.querySelectorAll('.trivia-opt');
+  if (chosen === correct) {
+    triviaScore++;
+    btn.classList.add('correct');
+  } else {
+    btn.classList.add('wrong');
+    opts[correct].classList.add('correct');
+  }
+  document.getElementById('trivia-score').textContent = 'Score: ' + triviaScore + '/' + triviaTotal;
+  document.getElementById('trivia-next').style.display = 'block';
+}
+
+function nextTrivia() {
+  triviaIdx++;
+  showTrivia();
+}
+
+// ==================== WOULD YOU RATHER ====================
+const wyrQuestions = [
+  ["Have the soccer skills of Messi","Have the Minecraft building skills of a pro YouTuber"],
+  ["Live in the Aztec Empire for a year","Live in the world of Zelda for a year"],
+  ["Be able to juggle a soccer ball 1000 times","Build anything in real life like you can in Minecraft"],
+  ["Have a pet wolf (like a tamed wolf in Minecraft)","Have a pet eagle (like an Aztec warrior)"],
+  ["Play soccer on the Moon (low gravity)","Play Minecraft in virtual reality"],
+  ["Be an Aztec emperor","Be Link from Zelda"],
+  ["Have super speed on a soccer field","Have unlimited resources in survival Minecraft"],
+  ["Build a real working treehouse","Build a real working go-kart"],
+  ["Explore a newly discovered cave system","Explore a sunken pirate ship"],
+  ["Know every guitar chord instantly","Know every trick shot in soccer"],
+  ["Have Zelda's glider in real life","Have a Minecraft elytra in real life"],
+  ["Fight a Warden in real life (Minecraft)","Fight a Lynel in real life (Zelda)"],
+  ["Live in a house you built entirely yourself","Live in a castle someone else built"],
+  ["Have the ability to breathe underwater","Have the ability to fly for 5 minutes a day"],
+  ["Be the world's best goalkeeper","Be the world's best striker"],
+  ["Tour with Ben Rector for a summer","Tour with Edgehill for a summer"],
+  ["Only eat poutine for a week","Only eat blueberries for a week"],
+  ["Find a real Aztec treasure","Find a real sunken ship treasure"],
+  ["Play in the World Cup final","Find the Master Sword in real life"],
+  ["Be invisible for a day","Be able to teleport 3 times a day"],
+  ["Have a diamond pickaxe in real life that can mine anything","Have the Master Sword that glows near danger"],
+  ["Build an entire city from scratch","Explore every country in the world"],
+  ["Have super strength","Have super intelligence"],
+  ["Be a starting player for your favorite MLS team at 16","Be a famous Minecraft builder at 16"],
+  ["Ride a horse across Montana","Kayak the entire Columbia River"],
+  ["Discover a new species of animal","Discover a new Aztec ruin"],
+  ["Score the winning goal in a championship","Build something that gets on the news"],
+  ["Have night vision","Have echolocation like a bat"],
+  ["Visit the International Space Station","Visit the bottom of the Mariana Trench"],
+  ["Be an inventor","Be an explorer"],
+  ["Spend a week surviving in the wilderness","Spend a week in a zero-gravity space station"],
+  ["Have the best reflexes in the world","Have the best endurance in the world"],
+  ["Play guitar on a stadium stage","Score a bicycle kick goal on live TV"],
+  ["Design a video game","Design a real building"],
+  ["Race a cheetah (you get a 50m head start)","Wrestle an octopus underwater"],
+  ["Only be allowed to travel by skateboard","Only be allowed to travel by zipline"],
+  ["Control fire","Control water"],
+  ["Have a personal robot assistant","Have a personal jetpack"],
+  ["Be 7 feet tall","Be able to run 40 mph"],
+  ["Win a Minecraft tournament for $1 million","Win a soccer tournament for $1 million"],
+  ["Time travel to see the Aztecs build Tenochtitlan","Time travel to see the first Moon landing"],
+  ["Have unbreakable bones","Have skin that heals instantly"],
+  ["Build a functional boat from scratch","Build a functional drone from scratch"],
+  ["Be the best player on a mediocre team","Be average on the best team ever"],
+  ["Explore the Amazon jungle","Explore the Sahara desert"],
+  ["Have Minecraft creative mode in real life for 1 hour a week","Have Zelda's Ultrahand ability forever"],
+  ["Eat the world's hottest pepper for $500","Eat a live cricket for $100"],
+  ["Have a photographic memory","Be ambidextrous (equally good with both hands/feet)"],
+  ["Be famous but always busy","Be unknown but have tons of free time"],
+  ["Soak in hot springs all day","Play soccer all day"],
+  ["Build the tallest Lego tower ever","Build the longest paper airplane flight ever"],
+  ["Have the power to talk to animals","Have the power to control the weather"],
+  ["Be captain of your team","Be the top scorer of your team"],
+  ["Never lose at trivia games","Never lose at sports"],
+  ["Travel the world for a year (no school)","Get any 3 things you want but stay home"],
+  ["Shrink to 6 inches tall for a day","Grow to 60 feet tall for a day"],
+  ["Know every language fluently","Know every instrument perfectly"],
+  ["Have a treehouse mansion","Have an underground bunker mansion"],
+  ["Master guitar in a day","Master a new language in a day"],
+  ["Be able to hold your breath for 30 minutes","Be able to stay awake for a week with no tiredness"],
+  ["Discover aliens exist","Discover time travel is possible"],
+  ["Kick a soccer ball into orbit","Throw a baseball at the speed of sound"],
+  ["Have a map that shows hidden treasures","Have a compass that always points to what you need most"],
+  ["Only eat gas station food for a week","Only sleep in a tent for a month"],
+  ["Build with unlimited Lego","Build with unlimited wood and tools"],
+  ["Know every soccer stat ever","Know every Minecraft secret ever"],
+  ["Live in the mountains","Live by the ocean"],
+  ["Be an astronaut","Be a deep sea explorer"],
+  ["Have a real-life heads-up display (like a video game)","Have a real-life inventory system"],
+  ["Own a soccer stadium","Own a game development studio"]
+];
+
+let wyrIdx = 0;
+let wyrOrder = [];
+
+function shuffleWYR() {
+  wyrOrder = wyrQuestions.map((_, i) => i).sort(() => Math.random() - 0.5);
+  wyrIdx = 0;
+}
+shuffleWYR();
+
+function showWYR() {
+  if (wyrIdx >= wyrOrder.length) { shuffleWYR(); }
+  const q = wyrQuestions[wyrOrder[wyrIdx]];
+  document.getElementById('wyr-question').textContent = 'Would you rather...';
+  document.getElementById('wyr-a').textContent = q[0];
+  document.getElementById('wyr-b').textContent = q[1];
+  document.getElementById('wyr-count').textContent = (wyrIdx + 1) + ' / ' + wyrQuestions.length;
+}
+
+function nextWYR() {
+  wyrIdx++;
+  showWYR();
+}
+
+// ==================== LICENSE PLATES ====================
+const plates = [
+  "Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia",
+  "Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland",
+  "Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey",
+  "New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina",
+  "South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming",
+  "Alberta","British Columbia","Manitoba","New Brunswick","Newfoundland","Nova Scotia","Ontario","Prince Edward Island","Quebec","Saskatchewan",
+  "Northwest Territories","Nunavut","Yukon"
+];
+
+let foundPlates = JSON.parse(localStorage.getItem('tate_plates') || '[]');
+
+function renderPlates() {
+  const grid = document.getElementById('plate-grid');
+  grid.innerHTML = '';
+  plates.forEach((p, i) => {
+    const div = document.createElement('div');
+    div.className = 'plate-item' + (foundPlates.includes(i) ? ' found' : '');
+    div.textContent = p;
+    div.onclick = () => togglePlate(i);
+    grid.appendChild(div);
+  });
+  document.getElementById('plate-count').textContent = foundPlates.length + ' / ' + plates.length + ' Found';
+}
+
+function togglePlate(idx) {
+  if (foundPlates.includes(idx)) {
+    foundPlates = foundPlates.filter(x => x !== idx);
+  } else {
+    foundPlates.push(idx);
+  }
+  localStorage.setItem('tate_plates', JSON.stringify(foundPlates));
+  renderPlates();
+}
+
+// ==================== MUSIC / CHORD SYSTEM ====================
+const noteFrequencies = {
+  'C3':130.81,'C#3':138.59,'D3':146.83,'D#3':155.56,'E3':164.81,'F3':174.61,
+  'F#3':185.00,'G3':196.00,'G#3':207.65,'A3':220.00,'A#3':233.08,'B3':246.94,
+  'C4':261.63,'C#4':277.18,'D4':293.66,'D#4':311.13,'E4':329.63,'F4':349.23,
+  'F#4':369.99,'G4':392.00,'G#4':415.30,'A4':440.00,'A#4':466.16,'B4':493.88,
+  'C5':523.25,'C#5':554.37,'D5':587.33,'D#5':622.25,'E5':659.25,'F5':698.46,
+  'F#5':739.99,'G5':783.99,'G#5':830.61,'A5':880.00,'A#5':932.33,'B5':987.77
+};
+
+const chordDefinitions = {
+  'C': ['C3','E3','G3','C4','E4'],
+  'D': ['D3','A3','D4','F#4','A4'],
+  'E': ['E3','B3','E4','G#4','B4','E5'],
+  'F': ['F3','C4','F4','A4','C5'],
+  'G': ['G3','B3','D4','G4','B4','G4'],
+  'A': ['A3','E4','A4','C#5','E5'],
+  'B': ['B3','F#4','B4','D#5','F#5'],
+  'Am': ['A3','E4','A4','C5','E5'],
+  'Bm': ['B3','F#4','B4','D5','F#5'],
+  'Cm': ['C3','G3','C4','D#4','G4'],
+  'Dm': ['D3','A3','D4','F4','A4'],
+  'Em': ['E3','B3','E4','G4','B4','E5'],
+  'Fm': ['F3','C4','F4','G#4','C5'],
+  'Gm': ['G3','D4','G4','A#4','D5'],
+  'C7': ['C3','E3','G3','A#3','C4','E4'],
+  'D7': ['D3','A3','C4','F#4','A4'],
+  'E7': ['E3','B3','D4','G#4','B4'],
+  'G7': ['G3','B3','D4','F4','G4','B4'],
+  'A7': ['A3','E4','G4','C#5','E5'],
+  'Fmaj7': ['F3','A3','C4','E4','A4']
+};
+
+const chordNames = Object.keys(chordDefinitions);
+let audioCtx = null;
+let progression = [];
+let isPlayingProg = false;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function playChord(chordName) {
+  const ctx = getAudioCtx();
+  const notes = chordDefinitions[chordName];
+  if (!notes) return;
+  notes.forEach((note, i) => {
+    setTimeout(() => {
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc1.type = 'triangle';
+      osc2.type = 'sawtooth';
+      osc1.frequency.value = noteFrequencies[note];
+      osc2.frequency.value = noteFrequencies[note];
+      gain.gain.setValueAtTime(0.18, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.5);
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(ctx.destination);
+      osc1.start(ctx.currentTime);
+      osc2.start(ctx.currentTime);
+      osc1.stop(ctx.currentTime + 1.5);
+      osc2.stop(ctx.currentTime + 1.5);
+    }, i * 30);
+  });
+}
+
+function addToProgression(chordName) {
+  progression.push(chordName);
+  renderProgression();
+}
+
+function renderProgression() {
+  const area = document.getElementById('progression-area');
+  if (progression.length === 0) {
+    area.innerHTML = '<span style="color:var(--text-dim);font-size:0.8rem;">Tap chords above to build, or load a preset</span>';
+    return;
+  }
+  area.innerHTML = progression.map((c, i) => 
+    '<span class="prog-chord" id="prog-' + i + '" onclick="removeFromProg(' + i + ')">' + c + '</span>'
+  ).join('');
+}
+
+function removeFromProg(idx) {
+  progression.splice(idx, 1);
+  renderProgression();
+}
+
+function clearProgression() {
+  progression = [];
+  renderProgression();
+}
+
+function playProgression() {
+  if (isPlayingProg || progression.length === 0) return;
+  isPlayingProg = true;
+  let i = 0;
+  function playNext() {
+    if (i >= progression.length) { isPlayingProg = false; return; }
+    document.querySelectorAll('.prog-chord').forEach(el => el.classList.remove('highlight'));
+    const el = document.getElementById('prog-' + i);
+    if (el) el.classList.add('highlight');
+    playChord(progression[i]);
+    i++;
+    setTimeout(playNext, 1200);
+  }
+  playNext();
+}
+
+function loadPreset() {
+  const val = document.getElementById('preset-select').value;
+  const presets = {
+    'edgehill1': ['G','D','Em','C'],
+    'edgehill2': ['Am','F','C','G'],
+    'benrector1': ['C','G','Am','F'],
+    'benrector2': ['G','Em','C','D'],
+    'campfire': ['G','C','D','C'],
+    'rock': ['E','A','B','A'],
+    'sad': ['Am','Dm','G','C'],
+    'pop': ['C','G','Am','F']
+  };
+  if (presets[val]) {
+    progression = [...presets[val]];
+    renderProgression();
+  }
+}
+
+// Render chord bank
+function renderChordBank() {
+  const bank = document.getElementById('chord-bank');
+  chordNames.forEach(name => {
+    const btn = document.createElement('button');
+    btn.className = 'chord-btn';
+    btn.textContent = name;
+    btn.onclick = () => { playChord(name); addToProgression(name); btn.classList.add('playing'); setTimeout(() => btn.classList.remove('playing'), 200); };
+    bank.appendChild(btn);
+  });
+}
+renderChordBank();
+
+// ==================== METRONOME ====================
+let metroBPM = 120;
+let metroTimeSig = 4;
+let metroRunning = false;
+let metroBeat = 0;
+let metroInterval = null;
+
+function updateBPM(val) {
+  metroBPM = parseInt(val);
+  document.getElementById('bpm-display').textContent = metroBPM;
+  if (metroRunning) { stopMetronome(); startMetronome(); }
+}
+
+function setTimeSig(beats, el) {
+  metroTimeSig = beats;
+  document.querySelectorAll('.time-sig-btn').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+  renderBeatDots();
+  if (metroRunning) { stopMetronome(); startMetronome(); }
+}
+
+function renderBeatDots() {
+  const dots = document.getElementById('beat-dots');
+  dots.innerHTML = '';
+  for (let i = 0; i < metroTimeSig; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'beat-dot';
+    dot.id = 'beat-dot-' + i;
+    dots.appendChild(dot);
+  }
+}
+
+function playClick(accent) {
+  const ctx = getAudioCtx();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'sine';
+  osc.frequency.value = accent ? 1000 : 700;
+  gain.gain.setValueAtTime(0.5, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + 0.05);
+}
+
+function startMetronome() {
+  metroBeat = 0;
+  const interval = (60 / metroBPM) * 1000;
+  metroInterval = setInterval(() => {
+    document.querySelectorAll('.beat-dot').forEach(d => { d.classList.remove('active','accent'); });
+    const dot = document.getElementById('beat-dot-' + metroBeat);
+    if (dot) {
+      if (metroBeat === 0) { dot.classList.add('accent'); playClick(true); }
+      else { dot.classList.add('active'); playClick(false); }
+    }
+    metroBeat = (metroBeat + 1) % metroTimeSig;
+  }, interval);
+}
+
+function stopMetronome() {
+  clearInterval(metroInterval);
+  metroInterval = null;
+  document.querySelectorAll('.beat-dot').forEach(d => { d.classList.remove('active','accent'); });
+}
+
+function toggleMetronome() {
+  metroRunning = !metroRunning;
+  const btn = document.getElementById('metro-btn');
+  if (metroRunning) {
+    btn.textContent = 'Stop Metronome';
+    startMetronome();
+  } else {
+    btn.textContent = 'Start Metronome';
+    stopMetronome();
+  }
+}
+
+renderBeatDots();
+
+// ==================== BUILD CHALLENGES ====================
+const buildChallenges = [
+  { day: "Day 1 (Jul 29)", title: "Card House Tower", desc: "Build a card house in the hotel room. How many levels can you stack? Record your best." },
+  { day: "Day 2 (Jul 30)", title: "Rubber Band Ball", desc: "Make a rubber band ball from gas station supplies. See how big you can get it by the end of the day." },
+  { day: "Day 3 (Jul 31)", title: "Dam Builder", desc: "Build a mini dam at Deception Falls creek. Use rocks, sticks, mud - whatever you can find." },
+  { day: "Day 4 (Aug 1)", title: "Aztec Pyramid", desc: "Design an Aztec pyramid out of sugar cubes, crackers, or whatever building material you can find." },
+  { day: "Day 5 (Aug 2)", title: "Juggle Record", desc: "Soccer ball juggling challenge. Count your record touches without the ball hitting the ground." },
+  { day: "Day 6 (Aug 3)", title: "Hotel Tower", desc: "Build the tallest tower from hotel room items (pillows, cups, books, remotes). Measure the height." },
+  { day: "Day 7 (Aug 4)", title: "Paper Airplane Lab", desc: "Make at least 3 different paper airplane designs. Test for distance, hang time, and accuracy." },
+  { day: "Day 8 (Aug 5)", title: "Stone Skipper", desc: "Skip rocks at a lake or river along the drive. Count your best number of skips." },
+  { day: "Day 9 (Aug 6)", title: "Mini Catapult", desc: "Build a mini catapult from popsicle sticks, rubber bands, and a spoon. Test launch distances." },
+  { day: "Day 10 (Aug 7)", title: "Balance Master", desc: "Stack the weirdest combination of things. How unlikely can you make it and still balance?" },
+  { day: "Day 11 (Aug 8)", title: "Time Capsule", desc: "Write a letter to 13-year-old Tate. What do you want to remember? What are your predictions for the year ahead?" }
+];
+
+let completedBuilds = JSON.parse(localStorage.getItem('tate_builds') || '[]');
+
+function renderBuilds() {
+  const list = document.getElementById('build-list');
+  list.innerHTML = '';
+  buildChallenges.forEach((ch, i) => {
+    const done = completedBuilds.includes(i);
+    const div = document.createElement('div');
+    div.className = 'build-challenge' + (done ? ' completed' : '');
+    div.onclick = () => toggleBuild(i);
+    div.innerHTML = '<div class="build-check">' + (done ? '&#10003;' : '') + '</div><div class="build-info"><h4>' + ch.day + ' - ' + ch.title + '</h4><p>' + ch.desc + '</p></div>';
+    list.appendChild(div);
+  });
+}
+
+function toggleBuild(idx) {
+  if (completedBuilds.includes(idx)) {
+    completedBuilds = completedBuilds.filter(x => x !== idx);
+  } else {
+    completedBuilds.push(idx);
+  }
+  localStorage.setItem('tate_builds', JSON.stringify(completedBuilds));
+  renderBuilds();
+}
+
+renderBuilds();
+
+// ==================== AZTEC CORNER ====================
+const nahuatlWords = [
+  { word: "Atl", pron: "AH-tl", meaning: "Water", fact: "The Aztecs built aqueducts to carry fresh water into Tenochtitlan." },
+  { word: "Tonatiuh", pron: "toh-NAH-tee-uh", meaning: "Sun / Sun God", fact: "The Aztecs believed the sun needed human hearts to keep moving." },
+  { word: "Ocelotl", pron: "oh-SEH-loh-tl", meaning: "Jaguar", fact: "Jaguar warriors were among the most elite Aztec fighters." },
+  { word: "Xocolatl", pron: "sho-KO-lah-tl", meaning: "Chocolate (bitter water)", fact: "The Aztecs drank chocolate cold, spiced with chili peppers." },
+  { word: "Teotl", pron: "TEH-oh-tl", meaning: "God / Sacred Force", fact: "The Aztecs had over 200 gods and goddesses." },
+  { word: "Cuauhtli", pron: "KWOW-tlee", meaning: "Eagle", fact: "Eagle warriors wore feathered helmets shaped like eagle heads." },
+  { word: "Calli", pron: "KAH-lee", meaning: "House", fact: "Aztec homes were made of adobe with thatched roofs." },
+  { word: "Miquiztli", pron: "mee-KEEZ-tlee", meaning: "Death", fact: "The Aztecs celebrated death as a transition, not an ending." },
+  { word: "Tlatoani", pron: "tlah-toh-AH-nee", meaning: "Ruler / He Who Speaks", fact: "The Aztec emperor was called the Huey Tlatoani - the Great Speaker." },
+  { word: "Chimalli", pron: "chee-MAH-lee", meaning: "Shield", fact: "Aztec shields were made of wood and covered with feathers and mosaic." },
+  { word: "Macuahuitl", pron: "mah-KWA-weetl", meaning: "Obsidian sword/club", fact: "This weapon had obsidian blades so sharp they could cut a horse's head off." },
+  { word: "Tlachtli", pron: "TLATCH-tlee", meaning: "Ball court / Ball game", fact: "The ball game used a solid rubber ball weighing 4 kg (almost 9 pounds)." },
+  { word: "Quetzalli", pron: "ket-SAH-lee", meaning: "Precious feather", fact: "Quetzal feathers were more valuable than gold to the Aztecs." },
+  { word: "Tepetl", pron: "TEH-peh-tl", meaning: "Mountain", fact: "Many Aztec temples were built to resemble mountains." },
+  { word: "Ollin", pron: "OH-leen", meaning: "Movement / Earthquake", fact: "The Aztecs believed we live in the era of the Fifth Sun, born from movement." },
+  { word: "Coatl", pron: "KO-aht-l", meaning: "Snake / Serpent", fact: "Quetzalcoatl means 'feathered serpent' - one of their most important gods." },
+  { word: "Yaotl", pron: "YAH-oh-tl", meaning: "Warrior / Enemy", fact: "Aztec boys started military training at age 15." },
+  { word: "Centzontli", pron: "sen-TSON-tlee", meaning: "Four hundred (meaning countless)", fact: "The Aztecs used base-20 counting instead of base-10 like we do." }
+];
+
+const aztecFacts = [
+  { title: "Tenochtitlan Was Bigger Than London", text: "When the Spanish arrived in 1519, Tenochtitlan had over 200,000 people. London had about 50,000. It was one of the largest cities in the world." },
+  { title: "Floating Gardens Fed Millions", text: "The Aztecs invented chinampas - artificial islands built on a lake where they grew crops. These 'floating gardens' were so productive they could harvest 7 times a year." },
+  { title: "Mandatory Education (Yes, Really)", text: "The Aztecs were one of the first civilizations to require ALL children to attend school - boys AND girls. This was centuries before most European countries did the same." },
+  { title: "The Macuahuitl Was Terrifying", text: "Their signature weapon was a wooden paddle lined with obsidian blades. Spanish records say it could cut a horse's head clean off in one swing." },
+  { title: "They Invented Hot Chocolate", text: "The Aztecs created xocolatl - a cold, bitter chocolate drink mixed with chili peppers, vanilla, and sometimes blood. Spanish conquistadors added sugar and made it the hot chocolate we know." },
+  { title: "Popcorn Was Aztec First", text: "The Aztecs made popcorn and used it for decorations, necklaces, and ceremonies. They called it momochitl." },
+  { title: "A City Built on a Lake", text: "Tenochtitlan was built on an island in Lake Texcoco, connected to land by three massive causeways. Mexico City sits on top of it today." },
+  { title: "Obsidian Surgery", text: "Aztec surgeons used obsidian blades that were sharper than modern steel scalpels. Some doctors today still use obsidian blades for delicate operations." },
+  { title: "The Calendar Was Insanely Accurate", text: "The Aztec calendar calculated the solar year at 365.2420 days. The actual value is 365.2422 days. They were more accurate than the European calendar of the time." },
+  { title: "Ball Game With Deadly Stakes", text: "The Aztec ball game (ullamaliztli) used a 9-pound rubber ball. Players could only use hips, knees, and elbows. Getting the ball through a stone ring on the wall was like scoring 100 goals at once." },
+  { title: "The Eagle, Snake, and Cactus", text: "The Aztecs founded Tenochtitlan where they saw an eagle eating a snake on a cactus - a sign from their god. This image is still on Mexico's flag today." },
+  { title: "Triple Alliance Superpower", text: "The Aztec Empire was actually three city-states working together: Tenochtitlan, Texcoco, and Tlacopan. Together they conquered most of central Mexico." },
+  { title: "Cacao Beans Were Money", text: "Chocolate was literally currency. A rabbit cost about 10 cacao beans. A slave cost about 100. Rich people drank their money." },
+  { title: "200+ Gods and Goddesses", text: "The Aztecs worshipped over 200 deities. Each had their own temple, festival, and rituals. Some gods demanded flowers. Others demanded... more." },
+  { title: "Skull Rack Display", text: "The tzompantli was a wooden rack displaying thousands of skulls outside temples. Recent excavations in Mexico City found racks with over 650 skulls, including women and children." },
+  { title: "Advanced Plumbing", text: "Tenochtitlan had public toilets, aqueducts bringing fresh water, and people collected waste for fertilizer. The city was cleaner than most European capitals of the era." },
+  { title: "The Spanish Had Help", text: "Cortes did not beat the Aztecs alone. He allied with 200,000+ warriors from rival tribes who hated Aztec rule. Disease (smallpox) killed far more Aztecs than Spanish weapons." }
+];
+
+let nahuatlIdx = Math.floor(Math.random() * nahuatlWords.length);
+
+function showNahuatlWord() {
+  const w = nahuatlWords[nahuatlIdx];
+  document.getElementById('nahuatl-word').innerHTML = 
+    '<div class="word">' + w.word + '</div>' +
+    '<div class="pronunciation">' + w.pron + '</div>' +
+    '<div class="meaning">' + w.meaning + '</div>' +
+    '<p style="margin-top:10px;font-size:0.8rem;color:var(--text-dim);">' + w.fact + '</p>';
+}
+
+function newNahuatlWord() {
+  nahuatlIdx = (nahuatlIdx + 1) % nahuatlWords.length;
+  showNahuatlWord();
+}
+
+function renderAztecFacts() {
+  const div = document.getElementById('aztec-facts');
+  div.innerHTML = aztecFacts.map(f => 
+    '<div class="aztec-fact"><h4>' + f.title + '</h4><p>' + f.text + '</p></div>'
+  ).join('');
+}
+
+showNahuatlWord();
+renderAztecFacts();
+
+// ==================== INIT ====================
+loadTrivia();
+showWYR();
+
+// ==================== DRUM KIT ====================
+function playDrum(type) {
+  const ctx = getAudioCtx();
+  const now = ctx.currentTime;
+  
+  switch(type) {
+    case 'kick': {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(150, now);
+      osc.frequency.exponentialRampToValueAtTime(40, now + 0.12);
+      gain.gain.setValueAtTime(1, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(now); osc.stop(now + 0.4);
+      break;
+    }
+    case 'snare': {
+      // Noise burst + body
+      const bufSize = ctx.sampleRate * 0.1;
+      const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+      const noise = ctx.createBufferSource();
+      noise.buffer = buf;
+      const noiseGain = ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.8, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'highpass'; filter.frequency.value = 1000;
+      noise.connect(filter); filter.connect(noiseGain); noiseGain.connect(ctx.destination);
+      noise.start(now); noise.stop(now + 0.15);
+      // Body
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle'; osc.frequency.value = 180;
+      gain.gain.setValueAtTime(0.7, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(now); osc.stop(now + 0.08);
+      break;
+    }
+    case 'hihat': {
+      const bufSize = ctx.sampleRate * 0.05;
+      const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+      const noise = ctx.createBufferSource();
+      noise.buffer = buf;
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.4, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'highpass'; filter.frequency.value = 7000;
+      noise.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+      noise.start(now); noise.stop(now + 0.06);
+      break;
+    }
+    case 'tom1': {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(200, now);
+      osc.frequency.exponentialRampToValueAtTime(100, now + 0.2);
+      gain.gain.setValueAtTime(0.7, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(now); osc.stop(now + 0.3);
+      break;
+    }
+    case 'tom2': {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(130, now);
+      osc.frequency.exponentialRampToValueAtTime(70, now + 0.25);
+      gain.gain.setValueAtTime(0.7, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(now); osc.stop(now + 0.35);
+      break;
+    }
+    case 'crash': {
+      const bufSize = ctx.sampleRate * 0.4;
+      const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+      const noise = ctx.createBufferSource();
+      noise.buffer = buf;
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.5, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass'; filter.frequency.value = 5000; filter.Q.value = 0.5;
+      noise.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+      noise.start(now); noise.stop(now + 0.6);
+      break;
+    }
+    case 'ride': {
+      const bufSize = ctx.sampleRate * 0.3;
+      const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+      const noise = ctx.createBufferSource();
+      noise.buffer = buf;
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.3, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'highpass'; filter.frequency.value = 8000;
+      noise.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+      noise.start(now); noise.stop(now + 0.4);
+      break;
+    }
+    case 'clap': {
+      for (let c = 0; c < 3; c++) {
+        const bufSize = ctx.sampleRate * 0.02;
+        const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+        const noise = ctx.createBufferSource();
+        noise.buffer = buf;
+        const gain = ctx.createGain();
+        const offset = c * 0.015;
+        gain.gain.setValueAtTime(0.6, now + offset);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.04);
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'bandpass'; filter.frequency.value = 2500;
+        noise.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+        noise.start(now + offset); noise.stop(now + offset + 0.04);
+      }
+      break;
+    }
+  }
+}
+
+// Drum Loops
+let drumLoopInterval = null;
+let drumLoopBeat = 0;
+
+const drumPatterns = {
+  rock: {
+    kick:  [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
+    snare: [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
+    hihat: [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0]
+  },
+  hiphop: {
+    kick:  [1,0,0,0, 0,0,1,0, 0,0,1,0, 0,0,0,0],
+    snare: [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
+    hihat: [1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1]
+  },
+  latin: {
+    kick:  [1,0,0,1, 0,0,1,0, 0,0,1,0, 0,1,0,0],
+    snare: [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,1],
+    hihat: [1,0,1,1, 0,1,1,0, 1,1,0,1, 1,0,1,0]
+  }
+};
+
+function toggleDrumLoop(pattern) {
+  stopDrumLoop();
+  drumLoopBeat = 0;
+  const p = drumPatterns[pattern];
+  if (!p) return;
+  const stepTime = (60 / metroBPM) * 1000 / 4; // 16th note grid
+  drumLoopInterval = setInterval(() => {
+    if (p.kick[drumLoopBeat]) playDrum('kick');
+    if (p.snare[drumLoopBeat]) playDrum('snare');
+    if (p.hihat[drumLoopBeat]) playDrum('hihat');
+    drumLoopBeat = (drumLoopBeat + 1) % 16;
+  }, stepTime);
+}
+
+function stopDrumLoop() {
+  if (drumLoopInterval) {
+    clearInterval(drumLoopInterval);
+    drumLoopInterval = null;
+  }
+}
+
+// ==================== LYRICS & SAVED SONGS ====================
+function saveLyricsDraft() {
+  localStorage.setItem('tate-lyrics-draft', document.getElementById('lyrics-pad').value);
+}
+
+function loadLyricsDraft() {
+  const draft = localStorage.getItem('tate-lyrics-draft') || '';
+  document.getElementById('lyrics-pad').value = draft;
+}
+
+function saveSong() {
+  const lyrics = document.getElementById('lyrics-pad').value.trim();
+  const prog = progression.join(' - ');
+  if (!prog && !lyrics) { alert('Add some chords or lyrics first!'); return; }
+  const title = prompt('Song title:');
+  if (!title) return;
+  const songs = JSON.parse(localStorage.getItem('tate-songs') || '[]');
+  songs.unshift({
+    title: title,
+    progression: prog,
+    lyrics: lyrics,
+    date: new Date().toLocaleDateString('en-US', {month: 'short', day: 'numeric'})
+  });
+  localStorage.setItem('tate-songs', JSON.stringify(songs));
+  renderSavedSongs();
+}
+
+function loadSavedSong(idx) {
+  const songs = JSON.parse(localStorage.getItem('tate-songs') || '[]');
+  const song = songs[idx];
+  if (!song) return;
+  progression = song.progression ? song.progression.split(' - ').filter(c => c) : [];
+  document.getElementById('lyrics-pad').value = song.lyrics || '';
+  renderProgression();
+}
+
+function deleteSavedSong(idx) {
+  if (!confirm('Delete this song?')) return;
+  const songs = JSON.parse(localStorage.getItem('tate-songs') || '[]');
+  songs.splice(idx, 1);
+  localStorage.setItem('tate-songs', JSON.stringify(songs));
+  renderSavedSongs();
+}
+
+function renderSavedSongs() {
+  const songs = JSON.parse(localStorage.getItem('tate-songs') || '[]');
+  const container = document.getElementById('saved-songs');
+  if (songs.length === 0) {
+    container.innerHTML = '<p style="font-size:0.8rem;color:var(--text-dim);text-align:center;">No songs yet. Start writing!</p>';
+    return;
+  }
+  container.innerHTML = songs.map((s, i) => `
+    <div class="saved-song-item">
+      <div class="song-name">${s.title}</div>
+      ${s.progression ? `<div class="song-detail">${s.progression}</div>` : ''}
+      ${s.lyrics ? `<div class="song-detail" style="font-style:italic;">${s.lyrics.split('\\n')[0].slice(0,50)}${s.lyrics.length > 50 ? '...' : ''}</div>` : ''}
+      <div class="song-actions">
+        <button onclick="loadSavedSong(${i})">Load</button>
+        <button onclick="deleteSavedSong(${i})">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+renderSavedSongs();
+loadLyricsDraft();
+
+</script>
+</body>
+</html>
