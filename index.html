@@ -1896,6 +1896,14 @@ function getAudioCtx() {
   return audioCtx;
 }
 
+// Unlock audio on first touch (iOS requirement)
+document.addEventListener('touchstart', function unlockAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  audioCtx.resume().then(() => {
+    document.removeEventListener('touchstart', unlockAudio);
+  });
+}, {once: false});
+
 function playChord(chordName) {
   const ctx = getAudioCtx();
   const notes = chordDefinitions[chordName];
