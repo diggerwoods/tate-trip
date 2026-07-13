@@ -1322,6 +1322,50 @@ h1, h2, h3, .aztec-font {
   </div>
 </div>
 
+<!-- MOVE TAB -->
+<div id="tab-move" class="tab-content">
+  <h2 class="section-title">Move</h2>
+  <p style="text-align:center;color:var(--text-dim);font-size:0.85rem;margin-bottom:20px;">Stay active on the road. Do these at rest stops, hotels, or in the car.</p>
+
+  <div class="card">
+    <h3 style="color:var(--terracotta-light);font-size:0.9rem;margin-bottom:12px;">Daily Movement Challenge</h3>
+    <div id="daily-move"></div>
+  </div>
+
+  <div class="card">
+    <h3 style="color:var(--gold-light);font-size:0.9rem;margin-bottom:12px;">Rest Stop Challenges (5 min)</h3>
+    <p style="color:var(--text-dim);font-size:0.78rem;margin-bottom:12px;">Do these every time the car stops. Tap to complete.</p>
+    <div id="rest-stop-moves"></div>
+  </div>
+
+  <div class="card">
+    <h3 style="color:var(--teal-light);font-size:0.9rem;margin-bottom:12px;">In-Car Moves (no space needed)</h3>
+    <div id="car-moves"></div>
+  </div>
+
+  <div class="card">
+    <h3 style="color:var(--gold-light);font-size:0.9rem;margin-bottom:12px;">Hotel Room Workout</h3>
+    <p style="color:var(--text-dim);font-size:0.78rem;margin-bottom:12px;">Full body circuit - do each exercise, tap to check off.</p>
+    <div id="hotel-workout"></div>
+    <button class="music-btn secondary" style="margin-top:12px;" onclick="resetWorkout()">Reset Workout</button>
+  </div>
+
+  <div class="card">
+    <h3 style="color:var(--terracotta-light);font-size:0.9rem;margin-bottom:4px;">Golf Challenges</h3>
+    <p style="color:var(--text-dim);font-size:0.78rem;margin-bottom:12px;">When you find open grass, try these.</p>
+    <div id="golf-challenges"></div>
+  </div>
+
+  <div class="card">
+    <h3 style="color:var(--gold-light);font-size:0.9rem;margin-bottom:4px;">Move Tracker</h3>
+    <p style="color:var(--text-dim);font-size:0.78rem;margin-bottom:12px;">Total challenges completed this trip:</p>
+    <div style="text-align:center;">
+      <span id="move-counter" style="font-family:'Cinzel Decorative',cursive;font-size:2.5rem;color:var(--gold-light);">0</span>
+      <p style="color:var(--text-dim);font-size:0.75rem;margin-top:4px;">CHALLENGES CRUSHED</p>
+    </div>
+  </div>
+</div>
+
 <!-- Navigation -->
 <nav class="tab-nav">
   <button class="tab-btn active" onclick="switchTab('countdown')"><span class="tab-icon">&#9203;</span>Home</button>
@@ -1330,6 +1374,7 @@ h1, h2, h3, .aztec-font {
   <button class="tab-btn" onclick="switchTab('games')"><span class="tab-icon">&#127918;</span>Games</button>
   <button class="tab-btn" onclick="switchTab('music')"><span class="tab-icon">&#127925;</span>Music</button>
   <button class="tab-btn" onclick="switchTab('build')"><span class="tab-icon">&#128296;</span>Build</button>
+  <button class="tab-btn" onclick="switchTab('move')"><span class="tab-icon">&#128170;</span>Move</button>
   <button class="tab-btn" onclick="switchTab('aztec')"><span class="tab-icon">&#127963;</span>Aztec</button>
 </nav>
 
@@ -1339,7 +1384,7 @@ function switchTab(tabId) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + tabId).classList.add('active');
-  const tabOrder = ['countdown','journey','map','games','music','build','aztec'];
+  const tabOrder = ['countdown','journey','map','games','music','build','move','aztec'];
   const idx = tabOrder.indexOf(tabId);
   document.querySelectorAll('.tab-btn')[idx].classList.add('active');
   if (tabId === 'map') setTimeout(initMap, 100);
@@ -2390,6 +2435,171 @@ function renderSavedSongs() {
 
 renderSavedSongs();
 loadLyricsDraft();
+
+// ==================== MOVE TAB ====================
+const dailyMoves = [
+  {day: 1, title: "Highway Sprints", desc: "At the first rest stop, sprint the length of the parking lot 5 times. Time yourself."},
+  {day: 2, title: "Wall Sit Challenge", desc: "Find a wall at the hotel. Hold a wall sit for as long as you can. Record your time. Beat it tomorrow."},
+  {day: 3, title: "Waterfall Burpees", desc: "At Deception Falls, do 20 burpees. The mist cools you down. No excuses."},
+  {day: 4, title: "Wedding Dance Prep", desc: "Practice 50 jumping jacks + 30 mountain climbers. You need energy for that dance floor."},
+  {day: 5, title: "Border Crossing Plank", desc: "When you cross into Canada, hold a plank for 1 minute to celebrate. You earned citizenship of Plank Nation."},
+  {day: 6, title: "Vancouver Stairs", desc: "Find stairs anywhere in the city. Run up and down 10 times. Time it."},
+  {day: 7, title: "Park Workout", desc: "In Stanley Park or wherever you explore: 15 push-ups, 20 squats, 10 lunges each leg, 30 sec plank. Repeat 3x."},
+  {day: 8, title: "Mountain Sprint", desc: "Long driving day. At every rest stop, sprint 100 meters. Count your stops."},
+  {day: 9, title: "Hot Springs Recovery", desc: "After soaking, do 50 bodyweight squats and stretch for 10 minutes. Your legs will thank you."},
+  {day: 10, title: "Montana Push-up Ladder", desc: "1 push-up, rest 5 sec. 2 push-ups, rest 5 sec. Keep going until you can't. What number did you reach?"},
+  {day: 11, title: "Final Boss", desc: "Last day in the car. Every hour, do 20 push-ups, 20 squats, 20 sit-ups wherever you are. Even at gas stations."}
+];
+
+const restStopMoves = [
+  "20 high knees (fast as you can)",
+  "10 broad jumps across the parking lot",
+  "15 squat jumps",
+  "Bear crawl 30 feet and back",
+  "20 mountain climbers",
+  "Sprint to a light pole and back x3",
+  "10 burpees (full send)",
+  "Crab walk race someone for 20 feet",
+  "30 second handstand hold (against wall or freestanding)",
+  "Juggle a soccer ball 50 times (or a rock if no ball)"
+];
+
+const carMoves = [
+  "Flex and hold every muscle for 10 seconds, one at a time (arms, legs, core, neck)",
+  "Seated core twists - 30 reps each side",
+  "Grip strengthener - squeeze fists as hard as you can for 30 seconds",
+  "Calf raises while seated - 50 reps",
+  "Isometric push - press palms together in front of chest, hold 20 seconds x5",
+  "Neck stretches - hold each direction 15 seconds",
+  "Ankle circles - 20 each direction each foot",
+  "Deep breathing - 4 seconds in, hold 7, out 8. Do 5 rounds."
+];
+
+const hotelWorkout = [
+  {name: "Push-ups", reps: "20"},
+  {name: "Squats", reps: "30"},
+  {name: "Plank hold", reps: "60 sec"},
+  {name: "Lunges (each leg)", reps: "15"},
+  {name: "Burpees", reps: "10"},
+  {name: "Mountain climbers", reps: "30"},
+  {name: "Superman hold", reps: "30 sec"},
+  {name: "Jump squats", reps: "15"},
+  {name: "Tricep dips (on chair)", reps: "15"},
+  {name: "Wall sit", reps: "45 sec"}
+];
+
+const golfChallenges = [
+  "Chipping contest - pick a target 20 yards away. Closest in 5 shots wins.",
+  "Putting practice - find flat ground, set a cup/bottle, putt with any ball.",
+  "Longest drive competition with a wiffle ball or tennis ball.",
+  "Trick shot challenge - can you chip it over something and land near a target?",
+  "Short game: throw a towel down 10 feet away. Land 3 out of 5 chips on it.",
+  "Balance challenge: stand on one foot, swing an imaginary club 10 times each side."
+];
+
+let moveCompleted = JSON.parse(localStorage.getItem('tate-moves') || '[]');
+let workoutChecked = JSON.parse(localStorage.getItem('tate-workout') || '[]');
+
+function renderDailyMove() {
+  const tripStart = new Date('2026-07-29');
+  const now = new Date();
+  const dayNum = Math.max(0, Math.min(10, Math.floor((now - tripStart) / 86400000)));
+  const move = dailyMoves[dayNum] || dailyMoves[0];
+  document.getElementById('daily-move').innerHTML = `
+    <div style="background:rgba(196,78,44,0.1);border:1px solid var(--terracotta);border-radius:10px;padding:16px;">
+      <div style="font-size:0.7rem;color:var(--terracotta-light);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px;">Day ${move.day}</div>
+      <div style="font-weight:800;color:var(--text);font-size:1rem;margin-bottom:6px;">${move.title}</div>
+      <div style="color:var(--text-dim);font-size:0.85rem;line-height:1.5;">${move.desc}</div>
+    </div>
+  `;
+}
+
+function renderRestStopMoves() {
+  const container = document.getElementById('rest-stop-moves');
+  container.innerHTML = restStopMoves.map((move, i) => `
+    <div class="build-challenge ${moveCompleted.includes('rest-'+i) ? 'completed' : ''}" onclick="toggleMove('rest-${i}')">
+      <div class="build-check">${moveCompleted.includes('rest-'+i) ? '&#10003;' : ''}</div>
+      <div>
+        <div style="font-weight:700;font-size:0.85rem;color:var(--text);">${move}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderCarMoves() {
+  const container = document.getElementById('car-moves');
+  container.innerHTML = carMoves.map((move, i) => `
+    <div style="background:var(--obsidian-light);border:1px solid var(--card-border);border-radius:8px;padding:12px;margin-bottom:8px;">
+      <span style="color:var(--teal-light);font-weight:700;margin-right:8px;">${i+1}.</span>
+      <span style="color:var(--text);font-size:0.85rem;">${move}</span>
+    </div>
+  `).join('');
+}
+
+function renderHotelWorkout() {
+  const container = document.getElementById('hotel-workout');
+  container.innerHTML = hotelWorkout.map((ex, i) => `
+    <div class="build-challenge ${workoutChecked.includes(i) ? 'completed' : ''}" onclick="toggleWorkout(${i})">
+      <div class="build-check">${workoutChecked.includes(i) ? '&#10003;' : ''}</div>
+      <div>
+        <div style="font-weight:700;font-size:0.88rem;color:var(--text);">${ex.name}</div>
+        <div style="font-size:0.75rem;color:var(--gold-light);">${ex.reps}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderGolfChallenges() {
+  const container = document.getElementById('golf-challenges');
+  container.innerHTML = golfChallenges.map((ch, i) => `
+    <div class="build-challenge ${moveCompleted.includes('golf-'+i) ? 'completed' : ''}" onclick="toggleMove('golf-${i}')">
+      <div class="build-check">${moveCompleted.includes('golf-'+i) ? '&#10003;' : ''}</div>
+      <div style="font-size:0.85rem;color:var(--text);">${ch}</div>
+    </div>
+  `).join('');
+}
+
+function toggleMove(id) {
+  if (moveCompleted.includes(id)) {
+    moveCompleted = moveCompleted.filter(m => m !== id);
+  } else {
+    moveCompleted.push(id);
+  }
+  localStorage.setItem('tate-moves', JSON.stringify(moveCompleted));
+  renderRestStopMoves();
+  renderGolfChallenges();
+  updateMoveCounter();
+}
+
+function toggleWorkout(idx) {
+  if (workoutChecked.includes(idx)) {
+    workoutChecked = workoutChecked.filter(w => w !== idx);
+  } else {
+    workoutChecked.push(idx);
+  }
+  localStorage.setItem('tate-workout', JSON.stringify(workoutChecked));
+  renderHotelWorkout();
+  updateMoveCounter();
+}
+
+function resetWorkout() {
+  workoutChecked = [];
+  localStorage.setItem('tate-workout', '[]');
+  renderHotelWorkout();
+  updateMoveCounter();
+}
+
+function updateMoveCounter() {
+  const total = moveCompleted.length + workoutChecked.length;
+  document.getElementById('move-counter').textContent = total;
+}
+
+renderDailyMove();
+renderRestStopMoves();
+renderCarMoves();
+renderHotelWorkout();
+renderGolfChallenges();
+updateMoveCounter();
 
 </script>
 </body>
